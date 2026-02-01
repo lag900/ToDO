@@ -994,6 +994,8 @@ const vClickOutside = {
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
+  // Ensure workspaces are loaded on start
+  workspaceStore.fetchWorkspaces();
 });
 
 
@@ -1183,8 +1185,8 @@ const filteredTasks = computed(() => {
     // Workspace filter: Only apply if in global mode and a specific workspace is selected in UI
     // If not in global mode, the server already filtered by workspace.
     if (workspaceStore.globalMode && filters.value.workspaceId) {
-       const taskWsId = task.board?.plan?.workspace_id || task.workspace_id || task.board?.workspace_id;
-       if (taskWsId != filters.value.workspaceId) return false;
+       const taskWsId = task.board?.plan?.workspace_id;
+       if (!taskWsId || taskWsId != filters.value.workspaceId) return false;
     }
 
     // Priority filter
@@ -1243,14 +1245,18 @@ const fetchTasks = async () => {
   const wsId = workspaceStore.globalMode ? 'all' : currentWorkspace.value?.id;
   if (!wsId && !workspaceStore.globalMode) return;
   
+  loading.value = true;
   try {
     const response = await axios.get(`/api/tasks`, {
         params: { workspace_id: wsId }
     });
+    // Ensure we receive a flat array
     tasks.value = Array.isArray(response.data) ? response.data : [];
   } catch (error) {
     console.error('Error fetching tasks:', error);
-    tasks.value = [];
+    // Don't clear tasks on failure to keep UI stable during brief offline/errors
+  } finally {
+    loading.value = false;
   }
 };
 

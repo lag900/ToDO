@@ -38,8 +38,9 @@ class TaskService
         $targetWorkspaceId = (int) $workspaceId;
         
         // Security check: Ensure user has access
-        $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
-        if (!in_array($targetWorkspaceId, $workspaceIds) && !$user->hasRole('admin')) {
+        $workspace = $user->workspaces()->where('workspaces.id', $targetWorkspaceId)->first();
+        
+        if (!$workspace) {
              return collect();
         }
 
@@ -64,8 +65,8 @@ class TaskService
         /** @var \App\Models\User $user */
         $user = Auth::user();
         
-        $isInWorkspace = $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
-        if (!$isInWorkspace && !$user->hasRole('admin')) {
+        $workspace = $user->workspaces()->where('workspaces.id', $workspaceId)->first();
+        if (!$workspace) {
             abort(403, 'Unauthorized access to task context.');
         }
 
@@ -88,10 +89,15 @@ class TaskService
                 
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
-                $role = $this->getWorkspaceRole($user, $workspaceId);
+                $workspace = $user->workspaces()->where('workspaces.id', $workspaceId)->first();
                 
-                if ((!$role || $role === 'viewer') && !$user->hasRole('admin')) {
+                if (!$workspace) {
                     abort(403, 'You do not have permission to create tasks in this workspace.');
+                }
+
+                $role = $workspace->pivot->role;
+                if ($role === 'viewer') {
+                    abort(403, 'Viewers cannot create tasks.');
                 }
             }
 
@@ -129,15 +135,17 @@ class TaskService
             $workspaceId = $task->board->plan->workspace_id;
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            $role = $this->getWorkspaceRole($user, $workspaceId);
+            $workspace = $user->workspaces()->where('workspaces.id', $workspaceId)->first();
             
-            // Allow if has role OR is admin
-            if (!$role && !$user->hasRole('admin')) {
+            // Allow if member
+            if (!$workspace) {
                 abort(403, 'You do not have permission to access this workspace.');
             }
 
-            // Viewer can ONLY change status and assigned_to (Admins bypass this)
-            if ($role === 'viewer' && !$user->hasRole('admin')) {
+            $role = $workspace->pivot->role;
+
+            // Viewer can ONLY change status and assigned_to
+            if ($role === 'viewer') {
                 $allowedViewerFields = ['status', 'assigned_to'];
                 $attemptedFields = array_keys($data);
                 if (count(array_diff($attemptedFields, $allowedViewerFields)) > 0) {
@@ -271,9 +279,9 @@ class TaskService
             $workspaceId = $task->board->plan->workspace_id;
             /** @var \App\Models\User $user */
             $user = Auth::user();
-            $role = $this->getWorkspaceRole($user, $workspaceId);
+            $workspace = $user->workspaces()->where('workspaces.id', $workspaceId)->first();
             
-            if (!$role || $role === 'viewer') {
+            if (!$workspace || $workspace->pivot->role === 'viewer') {
                 abort(403, 'You do not have permission to delete tasks in this workspace.');
             }
 
