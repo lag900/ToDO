@@ -79,15 +79,6 @@ class TaskService
                 $board = Board::with('plan')->findOrFail($boardId);
                 $workspaceId = $board->plan->workspace_id;
                 
-                // === FIX START: Explicitly set project_id (Legacy Support) ===
-                $data['project_id'] = $board->plan_id;
-                
-                if (empty($data['project_id'])) {
-                     // Fallback: Use plan relation or first available plan to prevent 1364 error
-                     $data['project_id'] = $board->plan ? $board->plan->id : (\App\Models\Plan::value('id') ?? 1);
-                }
-                // === FIX END ===
-                
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
                 $role = $this->getWorkspaceRole($user, $workspaceId);
@@ -318,5 +309,39 @@ class TaskService
             ->first();
 
         return $workspaceUser ? $workspaceUser->role : null;
+    }
+
+    /**
+     * Get Boards with grouped tasks for UI
+     */
+    public function getWorkspaceBoardsWithTasks($workspaceId)
+    {
+        // 1. Get all boards for this workspace
+        // We need to fetch boards linked to plans in this workspace
+        $boards = Board::whereHas('plan', function($q) use ($workspaceId) {
+            $q->where('workspace_id', $workspaceId);
+        })->with(['tasks' => function($q) {
+             // Load tasks for each board
+             // Crucial: ensure no strict status filtering excludes 'todo' tasks
+             $q->with(['assignee', 'creator', 'subtasks', 'checklists', 'workingBy'])
+               ->orderBy('priority', 'desc')
+               ->orderBy('created_at', 'desc');
+        }])->get();
+
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        // Optional: Filter boards if needed based on permissions, 
+        // but generally boards are visible to workspace members.
+        
+        // 2. Format response to match UI expectations
+        // This ensures the frontend receives exactly what it needs to render columns
+        return $boards->map(function($board) {
+            return [
+                'id' => $board->id,
+                'name' => $board->name, // e.g. "To Do", "In Progress"
+                'tasks' => $board->tasks
+            ];
+        });
     }
 }

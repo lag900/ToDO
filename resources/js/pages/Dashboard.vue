@@ -1155,15 +1155,17 @@ const getWorkspaceIcon = (type) => {
 const filters = ref({
   priority: null,
   monthYear: '',
-  timeRange: 'last_7_days', // Default as requested
+  timeRange: 'all', // Changed from last_7_days to prevent confusion
   customStart: '',
   customEnd: '',
   workspaceId: null
 });
 
-
 const hasActiveFilters = computed(() => {
-  return filters.value.priority !== null || filters.value.timeRange !== 'all' || filters.value.workspaceId !== null || !!filters.value.monthYear;
+  return filters.value.priority !== null || 
+         filters.value.timeRange !== 'all' || 
+         !!filters.value.monthYear ||
+         (workspaceStore.globalMode && filters.value.workspaceId !== null);
 });
 
 const resetFilters = () => {
@@ -1190,16 +1192,16 @@ const filteredTasks = computed(() => {
           if (tDate !== today) return false;
        } else if (filters.value.timeRange === 'last_7_days') {
           const limit = new Date(new Date().setDate(now.getDate() - 7));
-          if (taskDate < limit || taskDate > now) return false;
+          if (taskDate < limit) return false;
        } else if (filters.value.timeRange === 'last_14_days') {
           const limit = new Date(new Date().setDate(now.getDate() - 14));
-          if (taskDate < limit || taskDate > now) return false;
+          if (taskDate < limit) return false;
        } else if (filters.value.timeRange === 'last_30_days') {
           const limit = new Date(new Date().setDate(now.getDate() - 30));
-          if (taskDate < limit || taskDate > now) return false;
+          if (taskDate < limit) return false;
        } else if (filters.value.timeRange === 'last_360_days') {
           const limit = new Date(new Date().setDate(now.getDate() - 360));
-          if (taskDate < limit || taskDate > now) return false;
+          if (taskDate < limit) return false;
        } else if (filters.value.timeRange === 'custom') {
           if (filters.value.customStart) {
              if (taskDate < new Date(filters.value.customStart)) return false;

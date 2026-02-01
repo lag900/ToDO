@@ -13,15 +13,6 @@ class Task extends Model
     protected static function boot()
     {
         parent::boot();
-        
-        static::creating(function ($task) {
-            // CRITICAL FIX: Ensure project_id is never empty to prevent DB errors (General error: 1364)
-            if (empty($task->project_id)) {
-                // Infer project_id from board's plan_id or use a valid fallback
-                $board = $task->board;
-                $task->project_id = $board ? $board->plan_id : (\App\Models\Plan::value('id') ?? 1);
-            }
-        });
     }
 
     protected $fillable = [
@@ -40,8 +31,7 @@ class Task extends Model
         'blocked_reason',
         'start_date',
         'working_by_id',
-        'assigned_by_id',
-        'project_id'
+        'assigned_by_id'
     ];
 
     public function board(): BelongsTo

@@ -20,6 +20,14 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $workspaceId = $request->query('workspace_id');
+        
+        // Fix: Support Board View Structure directly
+        if ($request->has('grouped') || $request->query('view') === 'board') {
+             return response()->json([
+                 'boards' => $this->taskService->getWorkspaceBoardsWithTasks($workspaceId)
+             ]);
+        }
+        
         return response()->json($this->taskService->getAllTasks($workspaceId));
     }
 
