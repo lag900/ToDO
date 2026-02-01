@@ -61,15 +61,51 @@ class TaskDeliveryController extends Controller
 
     public function upload(Request $request)
     {
+        if (!$request->hasFile('file')) {
+            return response()->json([
+                'message' => 'No file received. The file might exceed the server\'s upload_max_filesize (currently 30MB) or post_max_size limits.'
+            ], 422);
+        }
+
         $request->validate([
-            'file' => 'required|file|max:10240', // 10MB
+            'file' => 'required|file|max:30720', // 30MB
         ]);
 
         $path = $request->file('file')->store('deliveries', 'public');
         
         return response()->json([
-            'path' => Storage::url($path),
+            'path' => Storage::disk('public')->url($path),
             'name' => $request->file('file')->getClientOriginalName(),
         ]);
+    }
+
+    public function destroy(TaskDelivery $delivery)
+    {
+        $task = $delivery->task;
+        $workspace = $task->board->plan->workspace;
+        
+        // Permission check: Owner of delivery or Owner of workspace
+        if ($delivery->user_id !== Auth::id() && $workspace->owner_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized to delete this delivery.'], 403);
+        }
+
+        return DB::transaction(function () use ($delivery) {
+            // Delete actual files from storage if they exist
+            foreach ($delivery->items as $item) {
+                if ($item->type !== 'link') {
+                    // Extract path from URL if it's a full URL
+                    $path = str_replace(url('/storage/'), '', $item->content);
+                    $path = ltrim($path, '/'); // Ensure no leading slash for disk operations
+                    if (Storage::disk('public')->exists($path)) {
+                        Storage::disk('public')->delete($path);
+                    }
+                }
+            }
+            
+            $delivery->items()->delete();
+            $delivery->delete();
+            
+            return response()->json(['message' => 'Delivery deleted successfully.']);
+        });
     }
 }

@@ -107,6 +107,15 @@
                     <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Package from {{ delivery.user?.display_name }}</p>
                     <span class="text-[8px] font-black uppercase text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">{{ formatDate(delivery.created_at) }}</span>
                   </div>
+                  
+                  <!-- Delivery Delete Button -->
+                  <button 
+                    v-if="delivery.user_id === auth.user.id || role === 'owner'"
+                    @click="deleteDelivery(delivery.id)"
+                    class="p-1 px-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all"
+                  >
+                    Delete Package
+                  </button>
                 </div>
 
                 <div v-if="delivery.notes" class="bg-white dark:bg-slate-900/50 p-4 rounded-2xl text-sm italic text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800/50">
@@ -117,12 +126,16 @@
                   <div 
                     v-for="item in delivery.items" 
                     :key="item.id" 
-                    @dblclick="openItem(item.content)"
-                    title="Double-click to open, Click icon to download"
+                    @click="openItem(getProperUrl(item.content))"
+                    :title="'Click to open ' + item.name"
                     class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group relative cursor-pointer select-none"
                   >
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+                      <!-- Link Icon -->
                       <svg v-if="item.type === 'link'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                      <!-- PDF Icon -->
+                      <svg v-else-if="item.name.toLowerCase().endsWith('.pdf')" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h3a1.5 1.5 0 0 0 0-3H9v6"/><path d="M5 12v6"/><path d="M5 15h3"/></svg>
+                      <!-- Generic File Icon -->
                       <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
                     <div class="flex-1 min-w-0 pr-8">
@@ -132,14 +145,15 @@
                     
                     <div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
                       <a 
-                        :href="item.content" 
+                        :href="getProperUrl(item.content)" 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        :download="item.type !== 'link' ? item.name : null"
+                        @click.stop
+                        :download="(!item.name.toLowerCase().endsWith('.pdf') && item.type !== 'link') ? item.name : null"
                         class="p-2 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
-                        :title="item.type === 'link' ? 'Open Link' : 'Download File'"
+                        :title="item.type === 'link' ? 'Open Link' : 'Open/Download File'"
                       >
-                        <svg v-if="item.type === 'link'" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        <svg v-if="item.type === 'link' || item.name.toLowerCase().endsWith('.pdf')" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                         <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                       </a>
                     </div>
@@ -547,6 +561,17 @@ const toggleSubtask = async (sub) => {
   }
 };
 
+const deleteDelivery = async (deliveryId) => {
+  if (!confirm('Are you sure you want to delete this delivery package? All associated files and links will be removed.')) return;
+  try {
+    await axios.delete(`/api/deliveries/${deliveryId}`);
+    fetchTask();
+    emit('updated');
+  } catch (error) {
+    alert('Delete failed: ' + (error.response?.data?.message || 'Server error'));
+  }
+};
+
 const deleteTask = async () => {
   if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) return;
   try {
@@ -595,6 +620,17 @@ const priorityClass = (p) => {
     case 'medium': return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400';
     default: return 'bg-slate-100 text-slate-500';
   }
+};
+
+const getProperUrl = (content) => {
+  if (!content) return '#';
+  if (content.startsWith('http://127.0.0.1') || content.startsWith('http://localhost')) {
+      const parts = content.split('/storage/');
+      if (parts.length > 1) {
+          return '/storage/' + parts[1];
+      }
+  }
+  return content;
 };
 
 const openItem = (url) => {
