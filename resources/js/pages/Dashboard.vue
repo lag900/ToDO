@@ -1169,14 +1169,23 @@ const hasActiveFilters = computed(() => {
 });
 
 const resetFilters = () => {
-  filters.value = { priority: null, monthYear: null, timeRange: 'last_7_days', workspaceId: null };
+  filters.value = { 
+    priority: null, 
+    monthYear: null, 
+    timeRange: 'all', 
+    workspaceId: !workspaceStore.globalMode && currentWorkspace.value ? currentWorkspace.value.id : null 
+  };
 };
 
 
 const filteredTasks = computed(() => {
   return tasks.value.filter(task => {
-    // Workspace filter
-    if (filters.value.workspaceId && task.board?.plan?.workspace_id !== filters.value.workspaceId) return false;
+    // Workspace filter: Only apply if in global mode and a specific workspace is selected in UI
+    // If not in global mode, the server already filtered by workspace.
+    if (workspaceStore.globalMode && filters.value.workspaceId) {
+       const taskWsId = task.board?.plan?.workspace_id || task.workspace_id;
+       if (taskWsId != filters.value.workspaceId) return false;
+    }
 
     // Priority filter
     if (filters.value.priority && task.priority !== filters.value.priority) return false;

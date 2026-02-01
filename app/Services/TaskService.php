@@ -20,7 +20,7 @@ class TaskService
 
         // 1. Global View (All My Workspaces)
         if ($workspaceId === 'all') {
-            $workspaceIds = $user->workspaces()->pluck('workspaces.id');
+            $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
             return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
                 ->whereNull('parent_id')
                 ->whereHas('board.plan', function ($q) use ($workspaceIds) {
@@ -35,16 +35,18 @@ class TaskService
         }
 
         // 2. Context View (Specific Workspace)
-        // Checks if user is in workspace OR is an Admin (Fix for empty views)
-        $isInWorkspace = $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
-        if (!$isInWorkspace && !$user->hasRole('admin')) {
+        // Ensure $workspaceId is an integer for reliability
+        $targetWorkspaceId = (int) $workspaceId;
+        
+        $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
+        if (!in_array($targetWorkspaceId, $workspaceIds) && !$user->hasRole('admin')) {
              return collect();
         }
 
         return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
             ->whereNull('parent_id')
-            ->whereHas('board.plan', function ($q) use ($workspaceId) {
-                $q->where('workspace_id', $workspaceId);
+            ->whereHas('board.plan', function ($q) use ($targetWorkspaceId) {
+                $q->where('workspace_id', $targetWorkspaceId);
             })
             ->orderBy('created_at', 'desc')
             ->get();
