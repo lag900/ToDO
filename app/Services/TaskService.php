@@ -11,13 +11,14 @@ use Illuminate\Support\Facades\DB;
 class TaskService
 {
     /**
-     * Get all tasks for a specific workspace, strictly scoped to the user's workspaces.
+     * Get all tasks for a specific workspace.
      */
     public function getAllTasks($workspaceId)
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
+        // 1. Global View (All My Workspaces)
         if ($workspaceId === 'all') {
             $workspaceIds = $user->workspaces()->pluck('workspaces.id');
             return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
@@ -33,9 +34,11 @@ class TaskService
             return collect();
         }
 
-        // Strict isolation: Check if user belongs to this workspace
-        if (!$user->workspaces()->where('workspaces.id', $workspaceId)->exists()) {
-            return collect();
+        // 2. Context View (Specific Workspace)
+        // Checks if user is in workspace OR is an Admin (Fix for empty views)
+        $isInWorkspace = $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
+        if (!$isInWorkspace && !$user->hasRole('admin')) {
+             return collect();
         }
 
         return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
@@ -56,7 +59,9 @@ class TaskService
         $workspaceId = $task->board->plan->workspace_id;
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        if (!$user->workspaces()->where('workspaces.id', $workspaceId)->exists()) {
+        
+        $isInWorkspace = $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
+        if (!$isInWorkspace && !$user->hasRole('admin')) {
             abort(403, 'Unauthorized access to task context.');
         }
 
@@ -74,19 +79,20 @@ class TaskService
                 $board = Board::with('plan')->findOrFail($boardId);
                 $workspaceId = $board->plan->workspace_id;
                 
-                // BACKWARD COMPATIBILITY: Ensure project_id is filled for legacy schema support
-                // The plans table was renamed from projects, so plan_id == project_id
+                // --- FIX: Ensure project_id is filled (Legacy Support) ---
                 $data['project_id'] = $board->plan_id;
-                
-                // Final safety fallback: If project_id is still missing/null (e.g. board data issue), use the plan relation or a default
                 if (empty($data['project_id'])) {
+                     // Fallback to prevent DB error 1364
                      $data['project_id'] = $board->plan ? $board->plan->id : (\App\Models\Plan::value('id') ?? 1);
                 }
-
+                // ---------------------------------------------------------
+                
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
                 $role = $this->getWorkspaceRole($user, $workspaceId);
-                if (!$role || $role === 'viewer') {
+                
+                // Allow if user has role OR is admin
+                if ((!$role || $role === 'viewer') && !$user->hasRole('admin')) {
                     abort(403, 'You do not have permission to create tasks in this workspace.');
                 }
             }
@@ -127,12 +133,13 @@ class TaskService
             $user = Auth::user();
             $role = $this->getWorkspaceRole($user, $workspaceId);
             
-            if (!$role) {
+            // Allow if has role OR is admin
+            if (!$role && !$user->hasRole('admin')) {
                 abort(403, 'You do not have permission to access this workspace.');
             }
 
-            // Viewer can ONLY change status and assigned_to
-            if ($role === 'viewer') {
+            // Viewer can ONLY change status and assigned_to (Admins bypass this)
+            if ($role === 'viewer' && !$user->hasRole('admin')) {
                 $allowedViewerFields = ['status', 'assigned_to'];
                 $attemptedFields = array_keys($data);
                 if (count(array_diff($attemptedFields, $allowedViewerFields)) > 0) {
