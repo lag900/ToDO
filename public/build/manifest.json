@@ -1,0 +1,32 @@
+{
+  "resources/css/app.css": {
+    "file": "assets/app-yceobaO_.css",
+    "src": "resources/css/app.css",
+    "isEntry": true,
+    "name": "app",
+    "names": [
+      "app.css"
+    ]
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-mfNyPaVm.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/pages/AcceptInvite.vue"
+    ],
+    "css": [
+      "assets/app-D_LM5qzN.css"
+    ]
+  },
+  "resources/js/pages/AcceptInvite.vue": {
+    "file": "assets/AcceptInvite-GTmC_WB3.js",
+    "name": "AcceptInvite",
+    "src": "resources/js/pages/AcceptInvite.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js"
+    ]
+  }
+}
