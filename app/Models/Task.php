@@ -10,6 +10,20 @@ class Task extends Model
 {
     use SoftDeletes;
 
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::creating(function ($task) {
+            // Safety: Ensure project_id is never empty to prevent DB errors
+            if (empty($task->project_id)) {
+                // Try to get it from the board's plan, or default to 1
+                $board = $task->board;
+                $task->project_id = $board ? $board->plan_id : (\App\Models\Plan::value('id') ?? 1);
+            }
+        });
+    }
+
     protected $fillable = [
         'title',
         'description',
