@@ -26,7 +26,8 @@ class Task extends Model
         'blocked_reason',
         'start_date',
         'working_by_id',
-        'assigned_by_id'
+        'assigned_by_id',
+        'project_id'
     ];
 
     public function board(): BelongsTo

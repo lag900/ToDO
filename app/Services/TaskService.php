@@ -73,6 +73,11 @@ class TaskService
             if ($boardId) {
                 $board = Board::with('plan')->findOrFail($boardId);
                 $workspaceId = $board->plan->workspace_id;
+                
+                // BACKWARD COMPATIBILITY: Ensure project_id is filled for legacy schema support
+                // The plans table was renamed from projects, so plan_id == project_id
+                $data['project_id'] = $board->plan_id;
+
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
                 $role = $this->getWorkspaceRole($user, $workspaceId);
