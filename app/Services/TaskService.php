@@ -79,13 +79,14 @@ class TaskService
                 $board = Board::with('plan')->findOrFail($boardId);
                 $workspaceId = $board->plan->workspace_id;
                 
-                // --- FIX: Ensure project_id is filled (Legacy Support) ---
+                // === FIX START: Explicitly set project_id (Legacy Support) ===
                 $data['project_id'] = $board->plan_id;
+                
                 if (empty($data['project_id'])) {
-                     // Fallback to prevent DB error 1364
+                     // Fallback: Use plan relation or first available plan to prevent 1364 error
                      $data['project_id'] = $board->plan ? $board->plan->id : (\App\Models\Plan::value('id') ?? 1);
                 }
-                // ---------------------------------------------------------
+                // === FIX END ===
                 
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
