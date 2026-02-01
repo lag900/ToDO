@@ -76,7 +76,7 @@ class TaskService
                 
                 // BACKWARD COMPATIBILITY: Ensure project_id is filled for legacy schema support
                 // The plans table was renamed from projects, so plan_id == project_id
-                $data['project_id'] = $board->plan_id;
+                $data['project_id'] = $board->plan_id ?? null;
 
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
