@@ -75,10 +75,10 @@ class TaskController extends Controller
         return response()->json($item);
     }
 
-    public function destroy(Task $task)
+    public function destroy(Request $request, Task $task)
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
+        $user = $request->user();
         $workspace = $task->board->plan->workspace;
 
         // Check if user is creator

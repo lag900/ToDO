@@ -1175,18 +1175,19 @@ const resetFilters = () => {
     priority: null, 
     monthYear: null, 
     timeRange: 'all', 
-    workspaceId: !workspaceStore.globalMode && currentWorkspace.value ? currentWorkspace.value.id : null 
+    workspaceId: null // Let the server handle isolation in Board View
   };
 };
 
 
 const filteredTasks = computed(() => {
   return tasks.value.filter(task => {
-    // Workspace filter: Only apply if in global mode and a specific workspace is selected in UI
-    // If not in global mode, the server already filtered by workspace.
+    // 1. Workspace Isolation: Only filter in frontend if in Global Mode + a filter is selected
     if (workspaceStore.globalMode && filters.value.workspaceId) {
-       const taskWsId = task.board?.plan?.workspace_id;
-       if (!taskWsId || taskWsId != filters.value.workspaceId) return false;
+      const taskWsId = task.board?.plan?.workspace_id;
+      if (Number(taskWsId) !== Number(filters.value.workspaceId)) {
+        return false;
+      }
     }
 
     // Priority filter
@@ -1268,22 +1269,13 @@ watch(currentWorkspace, (newWs) => {
 }, { deep: true });
 
 watch(() => workspaceStore.globalMode, (newVal) => {
-  if (newVal) {
-    // When entering Global Mode, clear the workspace filter so we see EVERYTHING
-    filters.value.workspaceId = null;
-  } else if (currentWorkspace.value) {
-    // When exiting, lock back to current workspace
-    filters.value.workspaceId = currentWorkspace.value.id;
-  }
+  // Always clear UI workspace filter when switching modes to prevent stale filters
+  filters.value.workspaceId = null;
   fetchTasks();
 }, { immediate: true });
 
-// Sync filter if workspace changes in single mode
-watch(currentWorkspace, (newWs) => {
-  if (!workspaceStore.globalMode && newWs) {
-    filters.value.workspaceId = newWs.id;
-  }
-});
+// No need to sync filters.workspaceId to currentWorkspaceId anymore as Board View
+// relies solely on the server-side filtering via fetchTasks()
 
 
 const saveTask = async () => {
