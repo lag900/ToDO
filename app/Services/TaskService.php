@@ -76,7 +76,12 @@ class TaskService
                 
                 // BACKWARD COMPATIBILITY: Ensure project_id is filled for legacy schema support
                 // The plans table was renamed from projects, so plan_id == project_id
-                $data['project_id'] = $board->plan_id ?? null;
+                $data['project_id'] = $board->plan_id;
+                
+                // Final safety fallback: If project_id is still missing/null (e.g. board data issue), use the plan relation or a default
+                if (empty($data['project_id'])) {
+                     $data['project_id'] = $board->plan ? $board->plan->id : (\App\Models\Plan::value('id') ?? 1);
+                }
 
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
