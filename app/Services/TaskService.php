@@ -35,17 +35,19 @@ class TaskService
         }
 
         // 2. Context View (Specific Workspace)
-        // Ensure $workspaceId is an integer for reliability
         $targetWorkspaceId = (int) $workspaceId;
         
+        // Security check: Ensure user has access
         $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
         if (!in_array($targetWorkspaceId, $workspaceIds) && !$user->hasRole('admin')) {
              return collect();
         }
 
+        // Optimized Query: Using direct join logic via whereHas for strict filtering
         return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
             ->whereNull('parent_id')
             ->whereHas('board.plan', function ($q) use ($targetWorkspaceId) {
+                // Ensure we filter by the correct workspace ID in the hierarchy
                 $q->where('workspace_id', $targetWorkspaceId);
             })
             ->orderBy('created_at', 'desc')
@@ -75,23 +77,24 @@ class TaskService
         return DB::transaction(function () use ($data) {
             $data['created_by'] = Auth::id();
             
-            // Validate board ownership/access
+            // Critical hierarchy mapping
             $boardId = $data['board_id'] ?? null;
             if ($boardId) {
                 $board = Board::with('plan')->findOrFail($boardId);
                 $workspaceId = $board->plan->workspace_id;
                 
+                // Ensure project_id (legacy) is always set to the plan_id
+                $data['project_id'] = $board->plan_id;
+                
                 /** @var \App\Models\User $user */
                 $user = Auth::user();
                 $role = $this->getWorkspaceRole($user, $workspaceId);
                 
-                // Allow if user has role OR is admin
                 if ((!$role || $role === 'viewer') && !$user->hasRole('admin')) {
                     abort(403, 'You do not have permission to create tasks in this workspace.');
                 }
             }
 
-            // If creating a subtask for a done task, reopen the parent
             if (isset($data['parent_id'])) {
                 $parent = Task::find($data['parent_id']);
                 if ($parent && $parent->status === 'done') {
@@ -103,6 +106,7 @@ class TaskService
                 $data['assigned_by_id'] = Auth::id();
             }
 
+            // Create the task with enforced mappings
             $task = Task::create($data);
 
             $this->logActivity($task, 'created', ['title' => $task->title]);

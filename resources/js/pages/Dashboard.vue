@@ -1183,7 +1183,7 @@ const filteredTasks = computed(() => {
     // Workspace filter: Only apply if in global mode and a specific workspace is selected in UI
     // If not in global mode, the server already filtered by workspace.
     if (workspaceStore.globalMode && filters.value.workspaceId) {
-       const taskWsId = task.board?.plan?.workspace_id || task.workspace_id;
+       const taskWsId = task.board?.plan?.workspace_id || task.workspace_id || task.board?.workspace_id;
        if (taskWsId != filters.value.workspaceId) return false;
     }
 
@@ -1255,11 +1255,11 @@ const fetchTasks = async () => {
 };
 
 // Reload tasks when workspace or global mode changes
-watch(currentWorkspace, () => {
-  if (!workspaceStore.globalMode) {
+watch(currentWorkspace, (newWs) => {
+  if (!workspaceStore.globalMode && newWs) {
     fetchTasks();
   }
-});
+}, { deep: true });
 
 watch(() => workspaceStore.globalMode, (newVal) => {
   if (newVal) {
@@ -1318,6 +1318,7 @@ const saveTask = async () => {
         resetNewTask();
         await fetchTasks();
   } catch (error) {
+    console.error('Task save error:', error);
     alert('Error: ' + (error.response?.data?.message || 'Connection failed'));
   } finally {
     loading.value = false;
