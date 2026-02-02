@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Task;
 use App\Models\ActivityLog;
 use App\Models\Board;
-use App\Events\UpdatedTask;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -125,11 +124,7 @@ class TaskService
                 ]);
             }
 
-            $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'workingBy']);
-            
-            broadcast(new UpdatedTask($task->id, $workspaceId, 'created'))->toOthers();
-
-            return $task;
+            return $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'workingBy']);
 
         });
     }
@@ -237,11 +232,7 @@ class TaskService
             }
 
 
-            $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'subtasks.creator', 'workingBy']);
-
-            broadcast(new UpdatedTask($task->id, $workspaceId, 'updated'))->toOthers();
-
-            return $task;
+            return $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'subtasks.creator', 'workingBy']);
         });
     }
 
@@ -298,12 +289,7 @@ class TaskService
 
             $task->checklists()->delete();
             $task->subtasks()->update(['parent_id' => null]);
-            
-            $deleted = $task->delete();
-            
-            broadcast(new UpdatedTask($task->id, $workspaceId, 'deleted'))->toOthers();
-
-            return $deleted;
+            return $task->delete();
         });
     }
 

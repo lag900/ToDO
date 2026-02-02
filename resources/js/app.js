@@ -1,5 +1,4 @@
 import './bootstrap';
-import './echo';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import router from './router';

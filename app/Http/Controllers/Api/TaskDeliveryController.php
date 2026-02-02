@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use App\Events\UpdatedTask;
 
 class TaskDeliveryController extends Controller
 {
@@ -34,7 +33,7 @@ class TaskDeliveryController extends Controller
             'items.*.description' => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($task, $workspace, $validated) {
+        return DB::transaction(function () use ($task, $validated) {
             $delivery = TaskDelivery::create([
                 'task_id' => $task->id,
                 'user_id' => Auth::id(),
@@ -55,8 +54,6 @@ class TaskDeliveryController extends Controller
             if ($task->status !== 'done') {
                 $task->update(['status' => 'done']);
             }
-
-            broadcast(new UpdatedTask($task->id, $workspace->id, 'updated'))->toOthers();
 
             return $delivery->load(['items', 'user']);
         });
@@ -92,7 +89,7 @@ class TaskDeliveryController extends Controller
             return response()->json(['message' => 'Unauthorized to delete this delivery.'], 403);
         }
 
-        return DB::transaction(function () use ($delivery, $task, $workspace) {
+        return DB::transaction(function () use ($delivery) {
             // Delete actual files from storage if they exist
             foreach ($delivery->items as $item) {
                 if ($item->type !== 'link') {
@@ -108,8 +105,6 @@ class TaskDeliveryController extends Controller
             $delivery->items()->delete();
             $delivery->delete();
             
-            broadcast(new UpdatedTask($task->id, $workspace->id, 'updated'))->toOthers();
-
             return response()->json(['message' => 'Delivery deleted successfully.']);
         });
     }
