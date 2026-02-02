@@ -1430,14 +1430,30 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
+const pollingInterval = ref(null);
+
+const startPolling = () => {
+    // Poll every 60 seconds to sync with other devices/tabs
+    pollingInterval.value = setInterval(() => {
+        if (!document.hidden) {
+            fetchTasks();
+        }
+    }, 60000);
+};
+
 onMounted(async () => {
   await workspaceStore.fetchWorkspaces();
-  // If currentWorkspace was already set (from cache) and fetchWorkspaces didn't change it, 
-  // we might need to fetch tasks manually. But fetchWorkspaces always resets currentWorkspace
-  // if it finds a better match or for the first time.
   if (tasks.value.length === 0) {
     fetchTasks();
   }
+  startPolling();
+});
+
+import { onUnmounted } from 'vue';
+onUnmounted(() => {
+    if (pollingInterval.value) {
+        clearInterval(pollingInterval.value);
+    }
 });
 </script>
 
