@@ -868,7 +868,7 @@
 
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { useWorkspaceStore } from '../stores/workspace';
@@ -1438,6 +1438,35 @@ onMounted(async () => {
   if (tasks.value.length === 0) {
     fetchTasks();
   }
+  startPolling();
+});
+
+onUnmounted(() => {
+  stopPolling();
+});
+
+let pollingInterval = null;
+
+const startPolling = () => {
+  stopPolling();
+  // Poll every 10 seconds. Adjust based on server load requirements.
+  pollingInterval = setInterval(() => {
+    // Only poll if the tab is active to save resources
+    if (!document.hidden) {
+      fetchTasks();
+    }
+  }, 10000); 
+};
+
+const stopPolling = () => {
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
+};
+
+watch([currentWorkspace, () => workspaceStore.globalMode], () => {
+  fetchTasks();
 });
 </script>
 

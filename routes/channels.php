@@ -12,3 +12,7 @@ use Illuminate\Support\Facades\Broadcast;
 | used to check if an authenticated user can listen to the channel.
 |
 */
+
+Broadcast::channel('workspace.{workspaceId}', function ($user, $workspaceId) {
+    return $user->workspaces()->where('workspaces.id', $workspaceId)->exists();
+});

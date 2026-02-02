@@ -126,8 +126,8 @@
                   <div 
                     v-for="item in delivery.items" 
                     :key="item.id" 
-                    @click="openItem(getProperUrl(item.content))"
-                    :title="'Click to open ' + item.name"
+                    @dblclick="openItem(getProperUrl(item.content))"
+                    :title="'Double-click to open preview'"
                     class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group relative cursor-pointer select-none"
                   >
                     <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
@@ -144,17 +144,27 @@
                     </div>
                     
                     <div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                      <!-- Download Button (Visible for files) -->
                       <a 
-                        :href="getProperUrl(item.content)" 
+                        v-if="item.type !== 'link'"
+                        :href="getProperUrl(item.content, true)" 
+                        @click.stop
+                        class="p-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg transition-all"
+                        title="Download File"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      </a>
+                      
+                      <!-- External Link / Open Button -->
+                      <a 
+                        :href="getProperUrl(item.content, false)" 
                         target="_blank" 
                         rel="noopener noreferrer"
                         @click.stop
-                        :download="(!item.name.toLowerCase().endsWith('.pdf') && item.type !== 'link') ? item.name : null"
                         class="p-2 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
-                        :title="item.type === 'link' ? 'Open Link' : 'Open/Download File'"
+                        :title="item.type === 'link' ? 'Open Link' : 'Open Preview'"
                       >
-                        <svg v-if="item.type === 'link' || item.name.toLowerCase().endsWith('.pdf')" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                       </a>
                     </div>
                   </div>
@@ -622,8 +632,17 @@ const priorityClass = (p) => {
   }
 };
 
-const getProperUrl = (content) => {
+const getProperUrl = (content, download = false) => {
   if (!content) return '#';
+  
+  // If it's an internal storage URL for deliveries
+  if (typeof content === 'string' && content.includes('/storage/deliveries/')) {
+    const filename = content.split('/').pop();
+    let url = `/delivery-file/${filename}`;
+    if (download) url += '?download=1';
+    return url;
+  }
+
   if (content.startsWith('http://127.0.0.1') || content.startsWith('http://localhost')) {
       const parts = content.split('/storage/');
       if (parts.length > 1) {

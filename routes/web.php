@@ -25,6 +25,8 @@ Route::get('/fix-database-issue', function () {
     }
 });
 
+Route::get('/delivery-file/{filename}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'showFile']);
+
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use App\Events\UpdatedTask;
 
 class TaskDeliveryController extends Controller
 {
@@ -33,7 +34,7 @@ class TaskDeliveryController extends Controller
             'items.*.description' => 'nullable|string',
         ]);
 
-        return DB::transaction(function () use ($task, $validated) {
+        return DB::transaction(function () use ($task, $workspace, $validated) {
             $delivery = TaskDelivery::create([
                 'task_id' => $task->id,
                 'user_id' => Auth::id(),
@@ -54,6 +55,8 @@ class TaskDeliveryController extends Controller
             if ($task->status !== 'done') {
                 $task->update(['status' => 'done']);
             }
+
+            broadcast(new UpdatedTask($task->id, $workspace->id, 'updated'))->toOthers();
 
             return $delivery->load(['items', 'user']);
         });
@@ -89,7 +92,7 @@ class TaskDeliveryController extends Controller
             return response()->json(['message' => 'Unauthorized to delete this delivery.'], 403);
         }
 
-        return DB::transaction(function () use ($delivery) {
+        return DB::transaction(function () use ($delivery, $task, $workspace) {
             // Delete actual files from storage if they exist
             foreach ($delivery->items as $item) {
                 if ($item->type !== 'link') {
@@ -105,7 +108,41 @@ class TaskDeliveryController extends Controller
             $delivery->items()->delete();
             $delivery->delete();
             
+            broadcast(new UpdatedTask($task->id, $workspace->id, 'updated'))->toOthers();
+
             return response()->json(['message' => 'Delivery deleted successfully.']);
         });
+    }
+
+    public function showFile(Request $request, $filename)
+    {
+        $path = 'deliveries/' . $filename;
+        
+        if (!Storage::disk('public')->exists($path)) {
+            abort(404);
+        }
+
+        $file = Storage::disk('public')->path($path);
+        $mime = Storage::disk('public')->mimeType($path);
+
+        // Files that should open in the browser for preview
+        $previewable = [
+            'application/pdf',
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'text/plain',
+        ];
+
+        // If 'download' parameter is present, force attachment
+        $disposition = ($request->has('download') || !in_array($mime, $previewable)) ? 'attachment' : 'inline';
+
+        return response()->file($file, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 }
