@@ -28,13 +28,13 @@
         <div class="grid lg:grid-cols-2 gap-16 items-center">
             <div>
                 <div class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-600 text-sm font-bold mb-6">
-                    Now with Google Calendar Sync
+                    v1.0 is Live!
                 </div>
                 <h1 class="text-5xl lg:text-7xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
                     The smartest way to <span class="text-indigo-600">organize</span> your work.
                 </h1>
                 <p class="text-xl text-slate-600 mb-10 leading-relaxed max-w-xl">
-                    Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface. Integrated deeply with <strong>Google Calendar</strong>.
+                    Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface.
                 </p>
                 <div class="flex gap-4">
                     <a href="/login" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 transition-all text-lg">Start Building Today</a>

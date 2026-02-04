@@ -27,13 +27,13 @@
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
             </span>
-            Now with Google Calendar Sync
+            v1.0 is Live!
           </div>
           <h1 class="text-5xl lg:text-7xl font-black text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
             The smartest way to <span class="text-indigo-600">organize</span> your work.
           </h1>
           <p class="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-xl">
-            Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface. Integrated deeply with <strong>Google Calendar</strong>.
+            Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface.
           </p>
           <div class="flex flex-wrap gap-4">
             <router-link to="/login" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 transition-all text-lg active:scale-95">
@@ -67,13 +67,7 @@
 
         <div class="grid md:grid-cols-3 gap-8">
           <!-- Feature 1 -->
-          <div class="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all group">
-            <div class="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 transition-transform">
-              <CalendarIcon class="w-8 h-8 text-indigo-600" />
-            </div>
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Google Calendar Sync</h3>
-            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Seamlessly sync your tasks with Google Calendar to keep your schedule in perfect harmony.</p>
-          </div>
+          <!-- Removed Google Calendar Feature Block -->
           <!-- Feature 2 -->
           <div class="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all group">
             <div class="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 transition-transform">

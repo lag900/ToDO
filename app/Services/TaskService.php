@@ -11,11 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class TaskService
 {
-    protected $googleCalendarService;
-
-    public function __construct(GoogleCalendarService $googleCalendarService)
+    public function __construct()
     {
-        $this->googleCalendarService = $googleCalendarService;
     }
 
     /**
@@ -155,6 +152,8 @@ class TaskService
                 ]);
             }
 
+            // Google Calendar Sync Removed
+            /*
             // Sync with Google Calendar
             $calendarStatus = null;
             if ($task->start_date) {
@@ -163,6 +162,7 @@ class TaskService
                     $this->logActivity($task, 'google_calendar_sync', ['status' => $calendarStatus]);
                 }
             }
+            */
 
             // Immediate Smart Notifications (Synchronous for Shared Hosting reliability)
             NotifyWorkspaceMembers::dispatch($task, 'task_created', [], Auth::user());
@@ -320,6 +320,8 @@ class TaskService
                 }
             }
 
+            // Google Calendar Sync Removed
+            /*
             // Sync with Google Calendar if relevant fields changed
             $calendarStatus = null;
             $calendarFields = ['start_date', 'deadline', 'title', 'description', 'status'];
@@ -337,9 +339,9 @@ class TaskService
                     $this->logActivity($task, 'google_calendar_sync', ['status' => $calendarStatus]);
                 }
             }
-
-            $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'subtasks.creator', 'workingBy', 'activityLogs.user']);
+            
             $task->calendar_sync_status = $calendarStatus;
+            */
 
             return $task;
         });
@@ -396,8 +398,8 @@ class TaskService
 
             $this->logActivity($task, 'deleted', ['title' => $task->title]);
 
-            // Remove from Google Calendar
-            $this->googleCalendarService->deleteEvent($task);
+            // Remove from Google Calendar - Disabled
+            // $this->googleCalendarService->deleteEvent($task);
 
             $task->checklists()->delete();
             $task->subtasks()->update(['parent_id' => null]);

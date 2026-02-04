@@ -35,7 +35,7 @@
                 <section>
                     <h2 class="text-2xl font-bold text-slate-800 mb-4">Information We Collect</h2>
                     <ul class="list-disc pl-5 space-y-2">
-                        <li><strong>Google Account & Calendar Information:</strong> When you sign in using Google OAuth, we access your name, email address, and profile picture. If you authorize calendar features, we may access your <strong>Google Calendar</strong> data to sync tasks and reminders.</li>
+                        <li><strong>Google Account Information:</strong> When you sign in using Google OAuth, we access your name, email address, and profile picture.</li>
                         <li><strong>Application Data:</strong> We store the tasks, notes, and todo lists that you create within the app.</li>
                     </ul>
                 </section>
@@ -44,7 +44,7 @@
                     <h2 class="text-2xl font-bold text-slate-800 mb-4">How We Use Information</h2>
                     <ul class="list-disc pl-5 space-y-2">
                         <li><strong>Authentication:</strong> To identify you and allow you to securely log into your account.</li>
-                        <li><strong>Functionality:</strong> To save/display tasks and provide <strong>Google Calendar</strong> synchronization.</li>
+                        <li><strong>Functionality:</strong> To save/display tasks.</li>
                     </ul>
                 </section>
 
