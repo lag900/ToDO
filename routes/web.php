@@ -30,6 +30,12 @@ Route::get('/maintain/clear-cache', function () {
 
 Route::get('/delivery-file/{filename}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'showFile']);
 
+// --- PUBLIC PAGES (Blade) for Google OAuth Compliance ---
+Route::view('/', 'public.landing');
+Route::view('/privacy-policy', 'public.privacy');
+Route::view('/terms-of-service', 'public.terms');
+
+// --- SPA MAIN ROUTE ---
 Route::get('/{any}', function () {
     return view('app');
-})->where('any', '.*');
+})->where('any', '^(?!api|auth|maintain|delivery-file|google).*$');
