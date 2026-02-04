@@ -68,10 +68,14 @@ class TaskObserver
             $isFuture = $startDate && $startDate->isFuture();
 
             // Determine timing
-            if ($isFuture) {
-                FacadesMail::to($recipient->email)->later($startDate, $mail);
-            } else {
-                FacadesMail::to($recipient->email)->send($mail);
+            try {
+                if ($isFuture) {
+                    FacadesMail::to($recipient->email)->later($startDate, $mail);
+                } else {
+                    FacadesMail::to($recipient->email)->send($mail);
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("SMTP Error in TaskObserver: " . $e->getMessage());
             }
 
             // Log the email intent

@@ -62,9 +62,13 @@ class SharingController extends Controller
         );
 
         // Send Email
-        \Illuminate\Support\Facades\Mail::to($validated['email'])->send(new \App\Mail\WorkspaceInvitation($invitation));
+        try {
+            \Illuminate\Support\Facades\Mail::to($validated['email'])->send(new \App\Mail\WorkspaceInvitation($invitation));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Failed to send invitation email: " . $e->getMessage());
+        }
 
-        return response()->json(['message' => 'Invitation sent successfully.']);
+        return response()->json(['message' => 'Invitation created successfully. Note: Email notification may be delayed.']);
     }
 
     public function acceptInvitation(Request $request) 

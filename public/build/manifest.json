@@ -1,6 +1,6 @@
 {
   "resources/css/app.css": {
-    "file": "assets/app-BYjiargs.css",
+    "file": "assets/app-BJZox3im.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -9,7 +9,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BwWDWXKS.js",
+    "file": "assets/app-BiBrfnZr.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -17,11 +17,11 @@
       "resources/js/pages/AcceptInvite.vue"
     ],
     "css": [
-      "assets/app-BJ5v5syC.css"
+      "assets/app-DHtroaPA.css"
     ]
   },
   "resources/js/pages/AcceptInvite.vue": {
-    "file": "assets/AcceptInvite-BhTyQ8fg.js",
+    "file": "assets/AcceptInvite-Bui7QFJ6.js",
     "name": "AcceptInvite",
     "src": "resources/js/pages/AcceptInvite.vue",
     "isDynamicEntry": true,
