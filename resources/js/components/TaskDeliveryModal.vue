@@ -23,8 +23,9 @@
         
         <!-- Delivery Notes -->
         <div class="space-y-3">
-          <label class="block text-[12px] font-black uppercase tracking-widest text-slate-400 px-1">Delivery Notes / Summary</label>
+          <label for="delivery-notes" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 px-1">Delivery Notes / Summary</label>
           <textarea 
+            id="delivery-notes"
             v-model="notes" 
             placeholder="Summarize what was done, any considerations, and next steps..."
             class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl px-6 py-5 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm min-h-[120px]"

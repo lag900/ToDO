@@ -12,7 +12,10 @@ class AuthController extends Controller
 {
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')->redirect();
+        return Socialite::driver('google')
+            ->scopes(['https://www.googleapis.com/auth/calendar.events'])
+            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->redirect();
     }
 
     public function handleGoogleCallback()
@@ -29,6 +32,8 @@ class AuthController extends Controller
             $user->update([
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken,
             ]);
         } else {
             $user = User::create([
@@ -39,6 +44,8 @@ class AuthController extends Controller
                 'display_name' => $googleUser->getName(),
                 'password' => null,
                 'has_completed_onboarding' => false,
+                'google_token' => $googleUser->token,
+                'google_refresh_token' => $googleUser->refreshToken,
             ]);
         }
 

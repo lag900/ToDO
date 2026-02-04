@@ -7,6 +7,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         currentWorkspace: null,
         globalMode: localStorage.getItem('global_mode') === 'true',
         loading: false,
+        initialized: false,
     }),
 
     actions: {
@@ -16,16 +17,21 @@ export const useWorkspaceStore = defineStore('workspace', {
                 const response = await axios.get('/api/workspaces');
                 this.workspaces = response.data;
                 
-                // Initialize current workspace if not set
-                if (!this.currentWorkspace && this.workspaces.length > 0) {
+                // Refresh current workspace data if already set
+                if (this.currentWorkspace) {
+                    const fresh = this.workspaces.find(w => w.id === this.currentWorkspace.id);
+                    if (fresh) this.currentWorkspace = fresh;
+                } else if (this.workspaces.length > 0) {
                     const lastId = localStorage.getItem('last_workspace_id');
                     const lastWorkspace = this.workspaces.find(w => w.id === parseInt(lastId));
                     this.currentWorkspace = lastWorkspace || this.workspaces[0];
                 }
+                this.initialized = true;
             } catch (error) {
                 console.error('Failed to fetch workspaces', error);
             } finally {
                 this.loading = false;
+                this.initialized = true; // Prevents UI hanging on data-dependent routes
             }
         },
 
@@ -68,6 +74,29 @@ export const useWorkspaceStore = defineStore('workspace', {
                 }
             } catch (error) {
                 console.error('Failed to delete workspace', error);
+                throw error;
+            }
+        },
+
+        async updateWorkspaceSettings(id, settings) {
+            try {
+                const response = await axios.patch(`/api/workspaces/${id}/settings`, { settings });
+                const updatedWorkspace = response.data;
+                
+                // Update in array
+                const index = this.workspaces.findIndex(w => w.id === id);
+                if (index !== -1) {
+                    this.workspaces[index] = updatedWorkspace;
+                }
+                
+                // Update current if matching
+                if (this.currentWorkspace?.id === id) {
+                    this.currentWorkspace = updatedWorkspace;
+                }
+                
+                return updatedWorkspace;
+            } catch (error) {
+                console.error('Failed to update workspace settings', error);
                 throw error;
             }
         }

@@ -28,8 +28,11 @@ class storeTaskRequest extends FormRequest
             'priority' => 'required|in:low,medium,high,urgent',
             'status' => 'required|string',
             'parent_id' => 'nullable|exists:tasks,id',
-            'deadline' => 'nullable|date',
-            'start_date' => 'nullable|date'
+            'deadline' => 'nullable|string',
+            'start_date' => 'nullable|string',
+            'assigned_to' => 'sometimes|nullable|exists:users,id',
+            'task_type' => 'sometimes|string|in:general,file,design,call',
+            'contact_info' => 'sometimes|nullable|string'
         ];
     }
 }

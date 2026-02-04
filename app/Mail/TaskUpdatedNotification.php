@@ -4,22 +4,27 @@ namespace App\Mail;
 
 use App\Models\Task;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class emailTaskNotification extends Mailable implements ShouldQueue
+class TaskUpdatedNotification extends Mailable
 {
     use Queueable, SerializesModels;
-    protected $task;
+
+    public $task;
+    public $changes;
+    public $actor;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($task)
+    public function __construct(Task $task, array $changes, $actor = null)
     {
         $this->task = $task;
+        $this->changes = $changes;
+        $this->actor = $actor;
     }
 
     /**
@@ -28,7 +33,7 @@ class emailTaskNotification extends Mailable implements ShouldQueue
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Email Task Notification',
+            subject: 'Task Updated: ' . $this->task->title,
         );
     }
 
@@ -38,10 +43,7 @@ class emailTaskNotification extends Mailable implements ShouldQueue
     public function content(): Content
     {
         return new Content(
-            view: 'emails.tasks.created',
-            with: [
-                'task' => $this->task,
-            ],
+            view: 'emails.tasks.updated',
         );
     }
 

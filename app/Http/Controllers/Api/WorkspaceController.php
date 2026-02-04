@@ -81,4 +81,30 @@ class WorkspaceController extends Controller
             return response()->json(['message' => 'Internal server error during deletion.'], 500);
         }
     }
+
+    public function updateSettings(Request $request, Workspace $workspace)
+    {
+        if (intval($workspace->owner_id) !== intval(Auth::id())) {
+            return response()->json(['message' => 'Only the owner can modify workspace settings.'], 403);
+        }
+
+        $validated = $request->validate([
+            'settings' => 'required|array'
+        ]);
+
+        $workspace->update([
+            'settings' => array_merge($workspace->settings ?? [], $validated['settings'])
+        ]);
+
+        // If Review step is disabled, migrate all 'testing' tasks to 'done'
+        if (isset($validated['settings']['enable_review_step']) && $validated['settings']['enable_review_step'] === false) {
+            \App\Models\Task::whereHas('board.plan', function ($query) use ($workspace) {
+                $query->where('workspace_id', $workspace->id);
+            })
+            ->where('status', 'testing')
+            ->update(['status' => 'done']);
+        }
+
+        return response()->json($workspace);
+    }
 }

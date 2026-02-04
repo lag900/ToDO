@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/workspaces', [\App\Http\Controllers\Api\WorkspaceController::class, 'index']);
     Route::post('/workspaces', [\App\Http\Controllers\Api\WorkspaceController::class, 'store']);
     Route::delete('/workspaces/{id}', [\App\Http\Controllers\Api\WorkspaceController::class, 'destroy']);
+    Route::patch('/workspaces/{workspace}/settings', [\App\Http\Controllers\Api\WorkspaceController::class, 'updateSettings']);
 
     Route::get('/plans', [\App\Http\Controllers\Api\PlanController::class, 'index']);
     

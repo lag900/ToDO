@@ -18,8 +18,9 @@
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none">
         <form @submit.prevent="submit">
           <div class="mb-8">
-            <label class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Display Name</label>
+            <label for="display-name" class="block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-3 px-1">Display Name</label>
             <input 
+              id="display-name"
               v-model="displayName" 
               type="text" 
               placeholder="e.g. Alex Thorne" 

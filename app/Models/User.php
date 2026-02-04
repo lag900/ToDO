@@ -21,6 +21,8 @@ class User extends Authenticatable
         'display_name',
         'has_completed_onboarding',
         'notification_settings',
+        'google_token',
+        'google_refresh_token',
     ];
 
     /**
@@ -31,7 +33,16 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
+        'google_refresh_token',
     ];
+
+    protected $appends = ['has_google_integration'];
+
+    public function getHasGoogleIntegrationAttribute()
+    {
+        return !empty($this->google_token);
+    }
 
     /**
      * Get the attributes that should be cast.

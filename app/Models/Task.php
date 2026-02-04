@@ -32,7 +32,17 @@ class Task extends Model
         'start_date',
         'working_by_id',
         'assigned_by_id',
-        'project_id'
+        'project_id',
+        'is_reviewed',
+        'google_calendar_event_id',
+        'reminder_minutes',
+        'task_type',
+        'contact_info'
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'deadline' => 'datetime',
     ];
 
     public function board(): BelongsTo

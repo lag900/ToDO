@@ -7,6 +7,7 @@ use App\Http\Requests\storeTaskRequest;
 use App\Models\Task;
 use App\Services\TaskService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
@@ -20,6 +21,29 @@ class TaskController extends Controller
     public function index(Request $request)
     {
         $workspaceId = $request->query('workspace_id');
+
+        // Feature: Refresh Logic
+        // If there are tasks in 'review' (testing) and they are marked as reviewed (is_reviewed=true),
+        // automatically move them to 'complete' (done).
+        if ($workspaceId && $workspaceId !== 'all') {
+             Task::whereHas('board.plan', function ($q) use ($workspaceId) {
+                $q->where('workspace_id', $workspaceId);
+             })
+             ->where('status', 'testing')
+             ->where('is_reviewed', true)
+             ->update(['status' => 'done']);
+        } elseif ($workspaceId === 'all') {
+            // Support global view refresh logic too
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
+            Task::whereHas('board.plan', function ($q) use ($workspaceIds) {
+                $q->whereIn('workspace_id', $workspaceIds);
+             })
+             ->where('status', 'testing')
+             ->where('is_reviewed', true)
+             ->update(['status' => 'done']);
+        }
         
         // Fix: Support Board View Structure directly
         if ($request->has('grouped') || $request->query('view') === 'board') {
@@ -51,8 +75,9 @@ class TaskController extends Controller
             'description' => 'sometimes|string|nullable',
             'priority' => 'sometimes|in:low,medium,high,urgent',
             'assigned_to' => 'sometimes|nullable|exists:users,id',
-            'deadline' => 'sometimes|nullable|date',
-            'start_date' => 'sometimes|nullable|date'
+            'deadline' => 'sometimes|nullable',
+            'start_date' => 'sometimes|nullable',
+            'is_reviewed' => 'sometimes|boolean'
         ]);
 
         $task = $this->taskService->updateTask($task, $validated);

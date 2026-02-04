@@ -124,7 +124,7 @@
             <tr>
                 <td class="header">
                     <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER" height="40" style="margin-bottom: 20px;">
-                    <p class="h1">New Task Alert</ */p>
+                    <p class="h1">New Task Alert</p>
                 </td>
             </tr>
             <tr>

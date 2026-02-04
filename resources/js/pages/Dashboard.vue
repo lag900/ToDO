@@ -4,7 +4,7 @@
       <!-- Primary Row: Core Navigation -->
       <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
         <div class="flex items-center gap-6 w-full sm:w-auto">
-          <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-10 lg:h-14 w-auto object-contain">
+          <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-12 lg:h-20 w-auto object-contain">
           <ContextSwitcher @create="openCreateModal" />
         </div>
 
@@ -46,7 +46,7 @@
               <p class="text-sm font-bold text-slate-800 dark:text-white leading-none">{{ auth.user?.display_name }}</p>
             </div>
             <div class="flex items-center gap-1 border-l border-slate-100 dark:border-slate-800 ml-2 pl-2">
-              <router-link v-if="userRole === 'owner' && !workspaceStore.globalMode" to="/settings" class="p-1.5 text-slate-300 hover:text-indigo-600 transition-colors" title="Workspace Settings">
+              <router-link to="/settings" class="p-1.5 text-slate-300 hover:text-indigo-600 transition-colors" title="Settings">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               </router-link>
               <button @click="auth.logout" class="p-1.5 text-slate-300 hover:text-rose-500 transition-colors">
@@ -146,7 +146,7 @@
               <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Priority</p>
               <div class="grid grid-cols-2 gap-2">
                 <button 
-                  v-for="p in [null, 'low', 'medium', 'high', 'urgent']" :key="p"
+                  v-for="p in [null, 'urgent', 'high', 'medium', 'low']" :key="p"
                   @click="filters.priority = p"
                   class="h-12 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all"
                   :class="[
@@ -217,34 +217,35 @@
     </div>
 
 
-    <!-- Mobile Navigation indicators -->
-    <div v-if="isMobile && currentView === 'board'" class="flex justify-center gap-4 mb-6 sticky top-0 py-2 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md z-30">
-       <button 
-         v-for="(col, index) in columns" :key="col.id"
-         @click="activeMobileColumnIndex = index"
-         class="py-2 px-1 focus:outline-none"
-       >
+    <!-- Mobile View Header -->
+    <div v-if="isMobile && currentView === 'board'" class="flex items-center justify-between px-6 mb-4">
+       <div class="flex items-center gap-1.5">
           <div 
+            v-for="(col, index) in columns" :key="'indicator-' + col.id"
             class="h-1.5 rounded-full transition-all duration-300"
-            :class="activeMobileColumnIndex === index ? 'w-8 bg-indigo-600' : 'w-2 bg-slate-300 dark:bg-slate-700'"
+            :class="activeMobileColumnIndex === index ? 'w-6 bg-indigo-600' : 'w-1.5 bg-slate-200 dark:bg-slate-800'"
           ></div>
-       </button>
+       </div>
+       <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">{{ columns[activeMobileColumnIndex].name }}</span>
     </div>
+
 
     <!-- Content Views -->
     <div 
       v-if="currentView === 'board'" 
-      class="flex lg:grid lg:grid-cols-4 gap-8 transition-all duration-500 overflow-x-auto lg:overflow-x-visible pb-4 lg:pb-0"
-      :class="{'snap-x snap-mandatory': isMobile}"
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
+      id="kanban-container"
+      class="flex gap-4 sm:gap-8 transition-all duration-300 overflow-x-auto pb-4 lg:grid"
+      :class="[
+        columns.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4', 
+        isMobile ? 'snap-x snap-mandatory scrollbar-hide' : 'custom-scrollbar'
+      ]"
+      @scroll="handleBoardScroll"
     >
       <div v-for="(column, index) in columns" :key="column.id" 
-           v-show="!isMobile || activeMobileColumnIndex === index"
            @dragover.prevent="draggingOverColumn = column.id" 
            @dragleave="draggingOverColumn = null"
            @drop="onDrop($event, column.id)"
-           class="flex-shrink-0 w-full lg:w-auto snap-center"
+           class="flex-shrink-0 w-[85vw] sm:w-[70vw] lg:w-auto snap-center pl-4 first:pl-0 lg:pl-0"
            :class="[
              'rounded-[2.5rem] p-4 sm:p-6 min-h-[500px] lg:min-h-[700px] transition-all duration-500 border-2 border-dashed',
              draggingOverColumn === column.id 
@@ -273,10 +274,16 @@
 
 
             <div 
-                 :draggable="canDrag"
+                 :draggable="!isMobile || (isLongPress && activeDragTaskId === task.id)"
                  @dragstart="onDragStart($event, task)"
-                 @dragend="draggingOverColumn = null"
-                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden">
+                 @dragend="activeDragTaskId = null"
+                 @touchstart="handleTaskTouchStart($event, task)"
+                 @touchend="handleTaskTouchEnd($event, task)"
+                 @touchmove="handleTaskTouchMove"
+                 @click="selectedTaskId = task.id"
+                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden transition-pop active-tap"
+                 :class="{'ring-4 ring-indigo-500/20 scale-105 z-20': isLongPress && activeDragTaskId === task.id}"
+            >
             
               <div :class="['absolute left-0 top-0 bottom-0 w-1', column.dotClass]"></div>
 
@@ -363,6 +370,7 @@
                     <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-500/20">
                       Done · Needs Delivery
                     </span>
+
                   </div>
 
                 </div>
@@ -508,24 +516,25 @@
         <div v-else class="space-y-4 px-2">
             <div 
               v-for="task in filteredTasks" :key="task.id" 
-              @touchstart="handleTaskTouchStart"
+              @touchstart="handleTaskTouchStart($event, task)"
+              @touchmove="handleTaskTouchMove"
               @touchend="handleTaskTouchEnd($event, task)"
               class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98] overflow-hidden"
             >
                 <div class="flex flex-col gap-4">
                   <!-- Header: Status & Priority -->
-                  <div class="flex items-center justify-between">
-                    <span :class="priorityClass(task.priority)" class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                      {{ task.priority }}
-                    </span>
-<div class="text-right">
+                    <div class="flex items-center gap-2">
+                      <span :class="priorityClass(task.priority)" class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
+                        {{ task.priority }}
+                      </span>
+                    </div>
+                    <div class="text-right">
                       <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg block">{{ task.status.replace('_', ' ') }}</span>
                       <template v-if="task.status === 'done'">
                          <span v-if="task.delivery" class="text-[8px] font-black uppercase text-emerald-500 mt-1">Delivered</span>
                          <span v-else class="text-[8px] font-black uppercase text-amber-500 mt-1">Pending Delivery</span>
                       </template>
                     </div>
-                  </div>
 
                   <!-- Content: Title & Work indicator -->
                   <div class="space-y-2">
@@ -626,19 +635,34 @@
             </div>
           </div>
 
+
+
+
           <div>
             <label for="task-title" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Task Title</label>
             <input id="task-title" name="title" v-model="newTask.title" type="text" placeholder="What needs to be done?" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium">
           </div>
 
-          <!-- Date & Time Row -->
+          <!-- Start Date & Time Row -->
+          <div class="grid grid-cols-2 gap-4">
+             <div>
+                <label for="task-start-date" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Date</label>
+                <CustomDatePicker id="task-start-date" name="start_date" v-model="newTask.start_date" />
+             </div>
+             <div>
+                <label for="task-start-time" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Time</label>
+                <input id="task-start-time" name="start_time" v-model="newTask.start_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+             </div>
+          </div>
+
+          <!-- Due Date & Time Row -->
           <div class="grid grid-cols-2 gap-4">
              <div>
                 <label for="task-due-date" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Date</label>
-                <input id="task-due-date" name="due_date" v-model="newTask.due_date" type="date" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+                <CustomDatePicker id="task-due-date" name="due_date" v-model="newTask.due_date" />
              </div>
              <div>
-                <label for="task-due-time" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Time (Opt)</label>
+                <label for="task-due-time" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Time</label>
                 <input id="task-due-time" name="due_time" v-model="newTask.due_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
              </div>
           </div>
@@ -648,6 +672,30 @@
             <textarea id="task-description" name="description" v-model="newTask.description" placeholder="Add some context..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm" rows="3"></textarea>
           </div>
 
+          <!-- Assignee Selector (Moved to Bottom) -->
+          <div v-if="currentWorkspace && currentWorkspace.members">
+            <label for="task-assignee" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Assign to</label>
+            <select id="task-assignee" v-model="newTask.assigned_to" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-white">
+              <option :value="null">Unassigned</option>
+              <option v-for="member in currentWorkspace.members" :key="member.id" :value="member.id">
+                {{ member.display_name }}
+              </option>
+            </select>
+          </div>
+
+
+          <!-- Notification Info -->
+          <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+             <div class="flex gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div class="space-y-1">
+                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">Smart Notifications</p>
+                   <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">You will receive an immediate notification via Gmail. Reminders will be sent through Google Calendar if a start date is set.</p>
+                </div>
+             </div>
+          </div>
 
           <div class="flex gap-4 pt-4">
             <button @click="showModal = false" class="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors">Cancel</button>
@@ -877,6 +925,7 @@ import TaskDetails from '../components/TaskDetails.vue';
 import CalendarView from '../components/CalendarView.vue';
 import ContextSwitcher from '../components/ContextSwitcher.vue';
 import ShareModal from '../components/ShareModal.vue';
+import CustomDatePicker from '../components/CustomDatePicker.vue';
 
 import TaskDeliveryModal from '../components/TaskDeliveryModal.vue';
 
@@ -884,12 +933,23 @@ const auth = useAuthStore();
 const workspaceStore = useWorkspaceStore();
 const { currentWorkspace } = storeToRefs(workspaceStore);
 
-const columns = [
+const allColumns = [
   { id: 'todo', name: 'Plan', bgClass: 'bg-indigo-500/10', dotClass: 'bg-indigo-500' },
   { id: 'in_progress', name: 'Work', bgClass: 'bg-amber-500/10', dotClass: 'bg-amber-500' },
   { id: 'testing', name: 'Review', bgClass: 'bg-blue-500/10', dotClass: 'bg-blue-500' },
   { id: 'done', name: 'Complete', bgClass: 'bg-emerald-500/10', dotClass: 'bg-emerald-500' }
 ];
+
+const columns = computed(() => {
+  const settings = currentWorkspace.value?.settings || {};
+  const showReview = settings.enable_review_step !== false; // Default to true
+  
+  if (showReview || workspaceStore.globalMode) {
+    return allColumns;
+  }
+  
+  return allColumns.filter(c => c.id !== 'testing');
+});
 
 const currentView = ref('board');
 const tasks = ref([]);
@@ -913,6 +973,8 @@ const activeMobileColumnIndex = ref(0);
 const showMobileSheet = ref(false);
 const touchStartX = ref(0);
 const taskTouchStartX = ref(0);
+const longPressTimer = ref(null);
+const isLongPress = ref(false);
 
 
 const checkMobile = () => {
@@ -922,30 +984,40 @@ const checkMobile = () => {
 };
 
 
-const handleTouchStart = (e) => {
+const handleBoardScroll = (e) => {
   if (!isMobile.value) return;
-  touchStartX.value = e.touches[0].clientX;
-};
-
-const handleTaskTouchStart = (e) => {
-  if (!isMobile.value) return;
-  taskTouchStartX.value = e.touches[0].clientX;
-};
-
-const handleTaskTouchEnd = async (e, task) => {
-  if (!isMobile.value) return;
-  const touchEndX = e.changedTouches[0].clientX;
-  const diff = taskTouchStartX.value - touchEndX;
-  
-  if (Math.abs(diff) > 80) {
-    if (diff < 0) {
-      // Swipe Right -> Complete Task
-      await updateTaskStatus(task, 'done');
-    } else {
-      // Swipe Left -> Open Details
-      selectedTaskId.value = task.id;
-    }
+  const scrollLeft = e.target.scrollLeft;
+  const width = e.target.offsetWidth;
+  const newIndex = Math.round(scrollLeft / width);
+  if (newIndex !== activeMobileColumnIndex.value) {
+    activeMobileColumnIndex.value = newIndex;
+    if (navigator.vibrate) navigator.vibrate(5);
   }
+};
+
+const activeDragTaskId = ref(null);
+
+const handleTaskTouchStart = (e, task) => {
+  if (!isMobile.value) return;
+  isLongPress.value = false;
+  activeDragTaskId.value = task.id;
+
+  longPressTimer.value = setTimeout(() => {
+    isLongPress.value = true;
+    if (navigator.vibrate) navigator.vibrate([10, 30, 10]); 
+  }, 600);
+};
+
+const handleTaskTouchEnd = (e, task) => {
+  clearTimeout(longPressTimer.value);
+  if (!isLongPress.value && activeDragTaskId.value === task.id) {
+    // It was a short tap
+    selectedTaskId.value = task.id;
+  }
+};
+
+const handleTaskTouchMove = () => {
+    clearTimeout(longPressTimer.value);
 };
 
 const updateTaskStatus = async (task, newStatus) => {
@@ -1103,6 +1175,8 @@ const resetNewTask = () => {
     status: 'todo',
     due_date: '',
     due_time: '',
+    start_date: '',
+    start_time: '',
     assigned_to: null
   };
 };
@@ -1114,6 +1188,8 @@ const newTask = ref({
   status: 'todo',
   due_date: '',
   due_time: '',
+  start_date: '',
+  start_time: '',
   assigned_to: null
 });
 
@@ -1135,6 +1211,12 @@ watch(() => newTask.value.due_date, (newDate) => {
     suggestion.value = { message: 'Short deadline. Set to Medium priority?', priority: 'medium' };
   } else {
     suggestion.value = null;
+  }
+});
+
+watch(() => newTask.value.start_date, (newStart) => {
+  if (newStart && !newTask.value.due_date) {
+    newTask.value.due_date = newStart;
   }
 });
 
@@ -1233,6 +1315,9 @@ const filteredTasks = computed(() => {
 
 
     return true;
+  }).sort((a, b) => {
+      const priorityScore = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+      return (priorityScore[b.priority] || 0) - (priorityScore[a.priority] || 0);
   });
 });
 
@@ -1283,9 +1368,29 @@ const saveTask = async () => {
     loading.value = true;
     try {
         const taskData = { ...newTask.value };
+        
+        // Helper to handle dates from CustomDatePicker (already in d/m/Y)
+        const formatToCustom = (dateStr, timeStr) => {
+            if (!dateStr) return null;
+            
+            const time = timeStr || '00:00';
+            
+            // If it's already in d/m/Y structure, just append time
+            if (dateStr.includes('/')) {
+                return `${dateStr} ${time}:00`;
+            }
+            
+            // Fallback for YYYY-MM-DD (unlikely with CustomDatePicker but for safety)
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y} ${time}:00`;
+        };
+
         if (taskData.due_date) {
-            const time = taskData.due_time || '23:59';
-            taskData.deadline = `${taskData.due_date} ${time}:00`;
+            taskData.deadline = formatToCustom(taskData.due_date, taskData.due_time || '23:59');
+        }
+
+        if (taskData.start_date) {
+            taskData.start_date = formatToCustom(taskData.start_date, taskData.start_time || '09:00');
         }
 
         // Add context to payload
@@ -1305,13 +1410,12 @@ const saveTask = async () => {
             }
         }
 
-        let deadline = null;
-        if (newTask.value.due_date) {
-            const time = newTask.value.due_time || '23:59';
-            deadline = `${newTask.value.due_date} ${time}:00`;
-        }
+        const payload = { ...taskData };
+        delete payload.due_date;
+        delete payload.due_time;
+        delete payload.start_time;
 
-        await axios.post('/api/tasks', { ...taskData, deadline });
+        await axios.post('/api/tasks', payload);
         showModal.value = false;
         resetNewTask();
         await fetchTasks();
@@ -1354,13 +1458,19 @@ const createWorkspace = async () => {
 };
 
 const formatDeadline = (dl) => {
+   if (!dl) return '';
    const date = new Date(dl);
    const now = new Date();
    const isToday = date.toDateString() === now.toDateString();
    const hasTime = date.getHours() !== 23 || date.getMinutes() !== 59;
    
-   const datePart = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-   const timePart = hasTime ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+   // dd/mm/yyyy format
+   const day = String(date.getDate()).padStart(2, '0');
+   const month = String(date.getMonth() + 1).padStart(2, '0');
+   const year = date.getFullYear();
+   const datePart = `${day}/${month}/${year}`;
+   
+   const timePart = hasTime ? date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '';
    
    if (isToday) return `Today ${timePart}`.trim();
    return `${datePart} ${timePart}`.trim();
@@ -1427,7 +1537,10 @@ const priorityClass = (p) => {
 const formatDate = (dateString) => {
   if (!dateString) return 'No date';
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
 };
 
 const pollingInterval = ref(null);
