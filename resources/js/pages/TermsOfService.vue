@@ -22,14 +22,14 @@
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Acceptance of Terms</h2>
             <p>
-              By accessing or using <strong>Todo App</strong> (https://todo.batucore.website), you agree to be bound by these simple Terms of Service. If you do not agree, please do not use the service.
+              By accessing or using <strong>Todo Batucore</strong> (https://todo.batucore.website), you agree to be bound by these simple Terms of Service. If you do not agree, please do not use the service.
             </p>
           </section>
 
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Use of the Service</h2>
             <p>
-              Todo App is designed to help you manage your personal tasks and todos. You are granted a limited, non-exclusive right to use the application for your own personal or professional organization.
+              Todo Batucore is designed to help you manage your personal tasks and todos. You are granted a limited, non-exclusive right to use the application for your own personal or professional organization.
             </p>
           </section>
 
@@ -45,14 +45,14 @@
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Disclaimer</h2>
             <p>
-              Todo App is provided on an <strong>"as-is"</strong> and <strong>"as-available"</strong> basis. While we strive for 100% uptime and data integrity, we do not guarantee that the service will be error-free or uninterrupted. Use of the service is at your own risk.
+              Todo Batucore is provided on an <strong>"as-is"</strong> and <strong>"as-available"</strong> basis. While we strive for 100% uptime and data integrity, we do not guarantee that the service will be error-free or uninterrupted. Use of the service is at your own risk.
             </p>
           </section>
 
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, Todo App and its creators shall not be liable for any direct, indirect, or incidental damages resulting from your use of the service, including but not limited to loss of data or loss of productivity.
+              To the maximum extent permitted by law, Todo Batucore and its creators shall not be liable for any direct, indirect, or incidental damages resulting from your use of the service, including but not limited to loss of data or loss of productivity.
             </p>
           </section>
 

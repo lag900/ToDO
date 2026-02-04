@@ -8,9 +8,9 @@
 
     <div class="w-full max-w-md">
       <div class="text-center mb-10">
-        <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-24 w-auto mx-auto mb-6">
-        <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Welcome to THINKER</h1>
-        <p class="text-slate-500 dark:text-slate-400 font-medium">Your enterprise workflow, simplified.</p>
+        <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore Logo" class="h-24 w-auto mx-auto mb-6">
+        <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Welcome to Todo Batucore</h1>
+        <p class="text-slate-500 dark:text-slate-400 font-medium">Your tasks, synced and simplified.</p>
       </div>
 
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-10 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none">

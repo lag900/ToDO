@@ -22,7 +22,7 @@
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Introduction</h2>
             <p>
-              Welcome to <strong>Todo App</strong> (https://todo.batucore.website). We value your privacy and are committed to being transparent about how we handle your information. This Privacy Policy explains what data we collect, why we collect it, and how we protect it.
+              Welcome to <strong>Todo Batucore</strong> (https://todo.batucore.website). We value your privacy and are committed to being transparent about how we handle your information. This Privacy Policy explains what data we collect, why we collect it, and how we protect it.
             </p>
           </section>
 
