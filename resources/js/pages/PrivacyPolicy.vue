@@ -30,7 +30,7 @@
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Information We Collect</h2>
             <p>To provide our service, we collect the following information:</p>
             <ul class="list-disc pl-5 space-y-2">
-              <li><strong>Google Account Information:</strong> When you sign in using Google OAuth, we access your name, email address, and profile picture.</li>
+              <li><strong>Google Account & Calendar Information:</strong> When you sign in using Google OAuth, we access your name, email address, and profile picture. If you authorize calendar features, we may access your <strong>Google Calendar</strong> data to sync tasks and reminders.</li>
               <li><strong>Application Data:</strong> We store the tasks, notes, and todo lists that you create within the app to ensure they are available to you whenever you log in.</li>
             </ul>
           </section>
@@ -40,7 +40,7 @@
             <p>We use your data strictly for the following purposes:</p>
             <ul class="list-disc pl-5 space-y-2">
               <li><strong>Authentication:</strong> To identify you and allow you to securely log into your account.</li>
-              <li><strong>Functionality:</strong> To save and display your tasks and manage your personal productivity experience.</li>
+              <li><strong>Functionality:</strong> To save and display your tasks, and to provide <strong>Google Calendar</strong> synchronization features if enabled.</li>
               <li><strong>Communication:</strong> We may use your email to send important service-related updates (not for marketing).</li>
             </ul>
             <p class="mt-4">We <strong>do not</strong> use your data for advertising purposes or to build profiles for tracking.</p>

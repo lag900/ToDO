@@ -45,7 +45,7 @@
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">Disclaimer</h2>
             <p>
-              Todo App is provided on an "as-is" and "as-available" basis. While we strive for 100% uptime and data integrity, we do not guarantee that the service will be error-free or uninterrupted. Use of the service is at your own risk.
+              Todo App is provided on an <strong>"as-is"</strong> and <strong>"as-available"</strong> basis. While we strive for 100% uptime and data integrity, we do not guarantee that the service will be error-free or uninterrupted. Use of the service is at your own risk.
             </p>
           </section>
 
