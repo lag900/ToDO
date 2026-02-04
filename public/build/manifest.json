@@ -1,4 +1,22 @@
 {
+  "_ArrowLeftIcon-oi4epsEr.js": {
+    "file": "assets/ArrowLeftIcon-oi4epsEr.js",
+    "name": "ArrowLeftIcon",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
+  "__plugin-vue_export-helper-DlAUqK2U.js": {
+    "file": "assets/_plugin-vue_export-helper-DlAUqK2U.js",
+    "name": "_plugin-vue_export-helper"
+  },
+  "_workspace-DQQ2rMut.js": {
+    "file": "assets/workspace-DQQ2rMut.js",
+    "name": "workspace",
+    "imports": [
+      "resources/js/app.js"
+    ]
+  },
   "resources/css/app.css": {
     "file": "assets/app-BQ9Z7Nca.css",
     "src": "resources/css/app.css",
@@ -9,24 +27,140 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BqtDVLy7.js",
+    "file": "assets/app-BcQGaL0j.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "dynamicImports": [
-      "resources/js/pages/AcceptInvite.vue"
+      "resources/js/pages/Landing.vue",
+      "resources/js/pages/Dashboard.vue",
+      "resources/js/pages/Login.vue",
+      "resources/js/pages/Welcome.vue",
+      "resources/js/pages/WorkspaceSetup.vue",
+      "resources/js/pages/Settings.vue",
+      "resources/js/pages/AcceptInvite.vue",
+      "resources/js/pages/PrivacyPolicy.vue",
+      "resources/js/pages/TermsOfService.vue"
     ],
     "css": [
-      "assets/app-EeGi1-6B.css"
+      "assets/app-DUqjFWVZ.css"
     ]
   },
   "resources/js/pages/AcceptInvite.vue": {
-    "file": "assets/AcceptInvite-DaE9w2h0.js",
+    "file": "assets/AcceptInvite-xTc75apH.js",
     "name": "AcceptInvite",
     "src": "resources/js/pages/AcceptInvite.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js"
+    ]
+  },
+  "resources/js/pages/Dashboard.vue": {
+    "file": "assets/Dashboard-DHmupJZJ.js",
+    "name": "Dashboard",
+    "src": "resources/js/pages/Dashboard.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_workspace-DQQ2rMut.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/Dashboard-D0PCd_tv.css"
+    ]
+  },
+  "resources/js/pages/Landing.vue": {
+    "file": "assets/Landing-CDdXJO3u.js",
+    "name": "Landing",
+    "src": "resources/js/pages/Landing.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/Landing-CFzS8DIz.css"
+    ]
+  },
+  "resources/js/pages/Login.vue": {
+    "file": "assets/Login-D5DrBGGu.js",
+    "name": "Login",
+    "src": "resources/js/pages/Login.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/Login-CQ_zrPzo.css"
+    ]
+  },
+  "resources/js/pages/PrivacyPolicy.vue": {
+    "file": "assets/PrivacyPolicy-lrl2TUJ_.js",
+    "name": "PrivacyPolicy",
+    "src": "resources/js/pages/PrivacyPolicy.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_ArrowLeftIcon-oi4epsEr.js"
+    ],
+    "css": [
+      "assets/PrivacyPolicy-2_AZC51t.css"
+    ]
+  },
+  "resources/js/pages/Settings.vue": {
+    "file": "assets/Settings-CJnYietP.js",
+    "name": "Settings",
+    "src": "resources/js/pages/Settings.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "_workspace-DQQ2rMut.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/Settings-BkR2VxYM.css"
+    ]
+  },
+  "resources/js/pages/TermsOfService.vue": {
+    "file": "assets/TermsOfService-eOZwo1QV.js",
+    "name": "TermsOfService",
+    "src": "resources/js/pages/TermsOfService.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js",
+      "_ArrowLeftIcon-oi4epsEr.js"
+    ],
+    "css": [
+      "assets/TermsOfService-DUZ9oGDk.css"
+    ]
+  },
+  "resources/js/pages/Welcome.vue": {
+    "file": "assets/Welcome-GiSVnSNR.js",
+    "name": "Welcome",
+    "src": "resources/js/pages/Welcome.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/Welcome-C7Rpfv-U.css"
+    ]
+  },
+  "resources/js/pages/WorkspaceSetup.vue": {
+    "file": "assets/WorkspaceSetup-B3KzlMdR.js",
+    "name": "WorkspaceSetup",
+    "src": "resources/js/pages/WorkspaceSetup.vue",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.js",
+      "__plugin-vue_export-helper-DlAUqK2U.js"
+    ],
+    "css": [
+      "assets/WorkspaceSetup-Cw4tRj4_.css"
     ]
   }
 }

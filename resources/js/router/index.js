@@ -1,50 +1,42 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '../pages/Dashboard.vue';
-import Login from '../pages/Login.vue';
-import Welcome from '../pages/Welcome.vue';
 import { useAuthStore } from '../stores/auth';
-
-import WorkspaceSetup from '../pages/WorkspaceSetup.vue';
-import Settings from '../pages/Settings.vue';
-import PrivacyPolicy from '../pages/PrivacyPolicy.vue';
-import TermsOfService from '../pages/TermsOfService.vue';
-import Landing from '../pages/Landing.vue';
+// Static imports removed to enable lazy loading
 
 const routes = [
     {
         path: '/',
         name: 'landing',
-        component: Landing,
+        component: () => import('../pages/Landing.vue'),
         meta: { requiresAuth: false }
     },
     {
         path: '/dashboard',
         name: 'dashboard',
-        component: Dashboard,
+        component: () => import('../pages/Dashboard.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/login',
         name: 'login',
-        component: Login,
+        component: () => import('../pages/Login.vue'),
         meta: { guestOnly: true }
     },
     {
         path: '/welcome',
         name: 'welcome',
-        component: Welcome,
+        component: () => import('../pages/Welcome.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/workspace-setup',
         name: 'workspace-setup',
-        component: WorkspaceSetup,
+        component: () => import('../pages/WorkspaceSetup.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/settings',
         name: 'settings',
-        component: Settings,
+        component: () => import('../pages/Settings.vue'),
         meta: { requiresAuth: true }
     },
     {
@@ -56,13 +48,13 @@ const routes = [
     {
         path: '/privacy-policy',
         name: 'privacy-policy',
-        component: PrivacyPolicy,
+        component: () => import('../pages/PrivacyPolicy.vue'),
         meta: { requiresAuth: false }
     },
     {
         path: '/terms-of-service',
         name: 'terms-of-service',
-        component: TermsOfService,
+        component: () => import('../pages/TermsOfService.vue'),
         meta: { requiresAuth: false }
     }
 ];
