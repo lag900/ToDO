@@ -30,8 +30,13 @@
           <span class="font-bold text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 transition-colors">Continue with Google</span>
         </a>
 
-        <div class="mt-8 pt-8 border-t border-slate-50 dark:border-slate-800 text-center">
+        <div class="mt-8 pt-8 border-t border-slate-50 dark:border-slate-800 text-center space-y-3">
           <p class="text-xs text-slate-400 font-medium">By continuing, you agree to our Terms of Service</p>
+          <div class="flex items-center justify-center gap-4">
+            <router-link to="/privacy-policy" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Privacy Policy</router-link>
+            <div class="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+            <router-link to="/terms-of-service" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Terms of Service</router-link>
+          </div>
         </div>
       </div>
     </div>

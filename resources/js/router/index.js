@@ -6,6 +6,8 @@ import { useAuthStore } from '../stores/auth';
 
 import WorkspaceSetup from '../pages/WorkspaceSetup.vue';
 import Settings from '../pages/Settings.vue';
+import PrivacyPolicy from '../pages/PrivacyPolicy.vue';
+import TermsOfService from '../pages/TermsOfService.vue';
 
 const routes = [
     {
@@ -43,6 +45,18 @@ const routes = [
         path: '/accept-invite',
         name: 'accept-invite',
         component: () => import('../pages/AcceptInvite.vue'),
+        meta: { requiresAuth: false }
+    },
+    {
+        path: '/privacy-policy',
+        name: 'privacy-policy',
+        component: PrivacyPolicy,
+        meta: { requiresAuth: false }
+    },
+    {
+        path: '/terms-of-service',
+        name: 'terms-of-service',
+        component: TermsOfService,
         meta: { requiresAuth: false }
     }
 ];
