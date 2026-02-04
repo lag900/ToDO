@@ -8,13 +8,19 @@ import WorkspaceSetup from '../pages/WorkspaceSetup.vue';
 import Settings from '../pages/Settings.vue';
 import PrivacyPolicy from '../pages/PrivacyPolicy.vue';
 import TermsOfService from '../pages/TermsOfService.vue';
+import Landing from '../pages/Landing.vue';
 
 const routes = [
     {
         path: '/',
+        name: 'landing',
+        component: Landing,
+        meta: { requiresAuth: false }
+    },
+    {
+        path: '/dashboard',
         name: 'dashboard',
         component: Dashboard,
-        alias: '/dashboard',
         meta: { requiresAuth: true }
     },
     {
@@ -89,7 +95,7 @@ router.beforeEach(async (to, from, next) => {
         return next({ name: 'workspace-setup' });
     }
 
-    if (isAuthenticated && isWelcomeComplete && hasWorkspace && (to.name === 'workspace-setup' || to.name === 'welcome' || to.name === 'login')) {
+    if (isAuthenticated && isWelcomeComplete && hasWorkspace && (to.name === 'workspace-setup' || to.name === 'welcome' || (to.name === 'login' || to.name === 'landing'))) {
         return next({ name: 'dashboard' });
     }
 
