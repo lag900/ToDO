@@ -7,22 +7,25 @@ use App\Http\Controllers\AuthController;
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
-// --- DATABASE FIX ROUTE ---
-Route::get('/fix-database-issue', function () {
+// --- DATABASE MAINTENANCE & FIX TOOLS ---
+Route::get('/maintain/migrate', function () {
+    if (request()->query('key') !== 'admin123') return "Unauthorized. Access key required.";
     try {
-        \Illuminate\Support\Facades\DB::statement("ALTER TABLE tasks MODIFY COLUMN project_id BIGINT UNSIGNED NULL");
-        return "<h1>✅ Database Fixed!</h1><p>The 'project_id' column is now nullable. You can try creating a task now.</p>";
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return "<h1>✅ Migrations Executed!</h1><pre>$output</pre>";
     } catch (\Exception $e) {
-        // If the error is about syntax (sqlite vs mysql), try generalized schema builder
-        try {
-             \Illuminate\Support\Facades\Schema::table('tasks', function (\Illuminate\Database\Schema\Blueprint $table) {
-                $table->unsignedBigInteger('project_id')->nullable()->change();
-            });
-            return "<h1>✅ Database Fixed (via Schema)!</h1><p>The 'project_id' column is now nullable.</p>";
-        } catch (\Exception $e2) {
-             return "<h1>❌ Error</h1><p>" . $e->getMessage() . "</p><p>" . $e2->getMessage() . "</p>";
-        }
+        return "<h1>❌ Migration Error</h1><p>" . $e->getMessage() . "</p>";
     }
+});
+
+Route::get('/maintain/clear-cache', function () {
+    if (request()->query('key') !== 'admin123') return "Unauthorized.";
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    return "<h1>⚡ Cache Cleared!</h1>";
 });
 
 Route::get('/delivery-file/{filename}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'showFile']);

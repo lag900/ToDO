@@ -17,10 +17,20 @@ class GoogleCalendarService
 
     public function __construct()
     {
+        if (!class_exists('Google\Client')) {
+            Log::error('Google API Client library is missing. Please run "composer install" on the server.');
+            return;
+        }
+
         $this->client = new Client();
         $this->client->setClientId(config('services.google.client_id'));
         $this->client->setClientSecret(config('services.google.client_secret'));
         $this->client->setAccessType('offline');
+    }
+
+    protected function isLibraryAvailable()
+    {
+        return class_exists('Google\Client');
     }
 
     /**
@@ -67,6 +77,10 @@ class GoogleCalendarService
      */
     public function syncTaskEvent(Task $task)
     {
+        if (!$this->isLibraryAvailable()) {
+            return 'library_missing';
+        }
+
         /** @var User $user */
         $user = $task->creator;
         
@@ -138,7 +152,7 @@ class GoogleCalendarService
 
     public function deleteEvent(Task $task)
     {
-        if (!$task->google_calendar_event_id || !$task->creator) {
+        if (!$this->isLibraryAvailable() || !$task->google_calendar_event_id || !$task->creator) {
             return;
         }
 
