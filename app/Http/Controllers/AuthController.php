@@ -13,27 +13,52 @@ class AuthController extends Controller
     public function redirectToGoogle()
     {
         return Socialite::driver('google')
-            ->with(['access_type' => 'offline', 'prompt' => 'consent'])
+            ->scopes([
+                'https://www.googleapis.com/auth/calendar',
+                'https://www.googleapis.com/auth/calendar.events',
+                'email',
+                'profile',
+                'openid'
+            ])
+            ->with([
+                'access_type' => 'offline', 
+                'prompt' => 'consent select_account'
+            ])
             ->redirect();
     }
 
     public function handleGoogleCallback()
     {
         try {
+            /** @var \Laravel\Socialite\Two\User $googleUser */
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
             return redirect('/login')->with('error', 'Google authentication failed.');
         }
 
         $user = User::where('email', $googleUser->getEmail())->first();
+        
+        $expiresAt = isset($googleUser->expiresIn) ? now()->addSeconds($googleUser->expiresIn) : null;
 
         if ($user) {
-            $user->update([
+            $updateData = [
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
                 'google_token' => $googleUser->token,
-                'google_refresh_token' => $googleUser->refreshToken,
-            ]);
+                'google_token_expires_at' => $expiresAt,
+            ];
+
+            // Only update refresh token if Google actually sends it
+            // (Shared hosting: don't overwrite a good old token with null)
+            if ($googleUser->refreshToken) {
+                $updateData['google_refresh_token'] = $googleUser->refreshToken;
+            }
+
+            // Success: Reset error and set granted flag
+            $updateData['google_calendar_error'] = null;
+            $updateData['google_calendar_scopes_granted'] = true;
+
+            $user->update($updateData);
         } else {
             $user = User::create([
                 'name' => $googleUser->getName(),
@@ -45,6 +70,8 @@ class AuthController extends Controller
                 'has_completed_onboarding' => false,
                 'google_token' => $googleUser->token,
                 'google_refresh_token' => $googleUser->refreshToken,
+                'google_token_expires_at' => $expiresAt,
+                'google_calendar_scopes_granted' => true,
             ]);
         }
 
@@ -95,6 +122,7 @@ class AuthController extends Controller
             'notification_settings.email_enabled' => 'boolean',
             'notification_settings.types' => 'array',
             'notification_settings.exclude_self' => 'boolean',
+            'notification_settings.exclude_tasks_created_by_me' => 'boolean',
         ]);
 
         $user = $request->user();

@@ -97,13 +97,26 @@
                     <div class="pt-6 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
                        <div>
                           <h3 class="font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest text-[10px]">Exclude my own actions</h3>
-                          <p class="text-[10px] text-slate-400 font-bold">Don't notify me for tasks I create myself.</p>
+                          <p class="text-[10px] text-slate-400 font-bold">Don't notify me for actions I perform myself.</p>
                        </div>
                        <div 
                           @click="settings.exclude_self = !settings.exclude_self"
                           :class="['w-10 h-5 rounded-full relative transition-all cursor-pointer', settings.exclude_self ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700']"
                        >
                           <div :class="['absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm', settings.exclude_self ? 'translate-x-5' : '']"></div>
+                       </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
+                       <div>
+                          <h3 class="font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest text-[10px]">Exclude Workspace Origin</h3>
+                          <p class="text-[10px] text-slate-400 font-bold">Don't notify me for tasks I created myself (but assigned to others).</p>
+                       </div>
+                       <div 
+                          @click="settings.exclude_tasks_created_by_me = !settings.exclude_tasks_created_by_me"
+                          :class="['w-10 h-5 rounded-full relative transition-all cursor-pointer', settings.exclude_tasks_created_by_me ? 'bg-indigo-600' : 'bg-slate-200 dark:bg-slate-700']"
+                       >
+                          <div :class="['absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-all shadow-sm', settings.exclude_tasks_created_by_me ? 'translate-x-5' : '']"></div>
                        </div>
                     </div>
                  </div>
@@ -217,10 +230,22 @@
                     </div>
                     
                     <div v-if="auth.user?.has_google_integration">
-                       <span class="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
-                          Connected
-                       </span>
+                        <div v-if="!auth.user?.google_calendar_scopes_granted" class="flex flex-col items-end gap-2">
+                            <span class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-lg text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-rose-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                Action Required
+                            </span>
+                            <a 
+                                href="/auth/google"
+                                class="px-4 py-2 bg-rose-600 text-white hover:bg-rose-700 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-lg shadow-rose-500/20"
+                            >
+                                Reconnect
+                            </a>
+                        </div>
+                        <span v-else class="px-4 py-2 bg-emerald-50 text-emerald-600 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 border border-emerald-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                            Connected
+                        </span>
                     </div>
                     <a 
                        v-else
@@ -266,7 +291,8 @@ const selectedWorkspaceId = ref(null);
 const settings = ref({
    email_enabled: true,
    types: ['task_created', 'task_updated', 'task_completed'],
-   exclude_self: false
+   exclude_self: true,
+   exclude_tasks_created_by_me: false
 });
 
 const wsSettings = ref({

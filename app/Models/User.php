@@ -23,6 +23,9 @@ class User extends Authenticatable
         'notification_settings',
         'google_token',
         'google_refresh_token',
+        'google_calendar_error',
+        'google_calendar_scopes_granted',
+        'google_token_expires_at',
     ];
 
     /**
@@ -37,11 +40,17 @@ class User extends Authenticatable
         'google_refresh_token',
     ];
 
-    protected $appends = ['has_google_integration'];
+    protected $appends = ['has_google_integration', 'google_calendar_needs_reconnect'];
 
     public function getHasGoogleIntegrationAttribute()
     {
         return !empty($this->google_token);
+    }
+
+    public function getGoogleCalendarNeedsReconnectAttribute()
+    {
+        // Needs reconnect if integrated but scopes NOT granted OR explicitly has scope error
+        return $this->has_google_integration && (!$this->google_calendar_scopes_granted || !empty($this->google_calendar_error));
     }
 
     /**
@@ -55,6 +64,8 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'notification_settings' => 'array',
+            'google_calendar_scopes_granted' => 'boolean',
+            'google_token_expires_at' => 'datetime',
         ];
     }
 

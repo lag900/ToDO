@@ -169,8 +169,7 @@ class TaskService
             }
             */
 
-            // Immediate Smart Notifications (Synchronous for Shared Hosting reliability)
-            NotifyWorkspaceMembers::dispatch($task, 'task_created', [], Auth::user());
+            // Notifications now handled by TaskObserver for SSoT consistency
 
             return $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'workingBy']);
 
@@ -305,25 +304,7 @@ class TaskService
                 ]);
             }
 
-            // Notification Logic for Update/Completion using background job (after response)
-            if (isset($data['status']) && $data['status'] === 'done' && $oldStatus !== 'done') {
-                NotifyWorkspaceMembers::dispatch($task, 'task_completed', [], Auth::user());
-            } else {
-                // If it wasn't a completion, but some fields changed, send a generic update
-                $significantFields = ['title', 'description', 'priority', 'deadline', 'assigned_to'];
-                $changes = [];
-                foreach ($significantFields as $field) {
-                    if (array_key_exists($field, $data) && $data[$field] !== $task->getOriginal($field)) {
-                        $changes[$field] = [
-                            'from' => $task->getOriginal($field),
-                            'to' => $data[$field]
-                        ];
-                    }
-                }
-                if (!empty($changes)) {
-                    NotifyWorkspaceMembers::dispatch($task, 'task_updated', $changes, Auth::user());
-                }
-            }
+            // Notifications now handled by TaskObserver for SSoT consistency
 
             // Google Calendar Sync Removed
             /*

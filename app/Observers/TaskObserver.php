@@ -2,14 +2,8 @@
 
 namespace App\Observers;
 
-use App\Mail\emailTaskNotification;
 use App\Models\Task;
-use App\Models\User;
-use App\Models\EmailLog;
-use App\Notifications\TaskCreatedNotification;
-use Illuminate\Support\Facades\Mail as FacadesMail;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\Auth;
+use App\Jobs\SyncTaskToGoogleCalendar;
 
 class TaskObserver
 {
@@ -18,7 +12,14 @@ class TaskObserver
      */
     public function created(Task $task): void
     {
-        $this->notifyRecipients($task, 'task_created');
+        // 1. Google Calendar Sync
+        $user = $task->workingBy ?: $task->assignee ?: $task->creator;
+        if ($user && $user->google_token && $task->start_date && $task->deadline) {
+            $this->dispatchSync($task, 'created');
+        }
+
+        // 2. Email Notifications
+        \App\Jobs\NotifyWorkspaceMembers::dispatch($task, 'task_created', [], \Illuminate\Support\Facades\Auth::user())->afterResponse();
     }
 
     /**
@@ -26,66 +27,71 @@ class TaskObserver
      */
     public function updated(Task $task): void
     {
-        // If start_date was just set or changed, we might want to notify
-        if ($task->wasChanged('start_date') && $task->start_date) {
-            $this->notifyRecipients($task, 'task_updated');
+        // 1. Google Calendar Sync logic
+        $calendarFields = ['title', 'description', 'start_date', 'deadline', 'working_by_id', 'assigned_to'];
+        
+        if ($task->wasChanged($calendarFields)) {
+            if (($task->wasChanged('working_by_id') || $task->wasChanged('assigned_to')) && $task->getOriginal('google_calendar_event_id')) {
+                $oldUserId = $task->getOriginal('working_by_id') ?: $task->getOriginal('assigned_to');
+                if ($oldUserId) {
+                    $this->dispatchSync($task, 'deleted', $task->getOriginal('google_calendar_event_id'), $oldUserId);
+                    $task->google_calendar_event_id = null; // Reset locally
+                }
+            }
+
+            $user = $task->workingBy ?: $task->assignee ?: $task->creator;
+            if ($user && $user->google_token) {
+                $this->dispatchSync($task, 'updated');
+            }
+        }
+
+        // 2. Email Notifications logic
+        $actor = \Illuminate\Support\Facades\Auth::user();
+        if ($task->wasChanged('status') && $task->status === 'done' && $task->getOriginal('status') !== 'done') {
+            \App\Jobs\NotifyWorkspaceMembers::dispatch($task, 'task_completed', [], $actor)->afterResponse();
+        } else {
+            $significantFields = ['title', 'description', 'priority', 'deadline', 'assigned_to'];
+            $changes = [];
+            foreach ($significantFields as $field) {
+                if ($task->wasChanged($field)) {
+                    $changes[$field] = [
+                        'from' => $task->getOriginal($field),
+                        'to' => $task->$field
+                    ];
+                }
+            }
+            if (!empty($changes)) {
+                \App\Jobs\NotifyWorkspaceMembers::dispatch($task, 'task_updated', $changes, $actor)->afterResponse();
+            }
         }
     }
 
-    protected function notifyRecipients(Task $task, string $type): void
+    /**
+     * Handle the Task "deleted" event.
+     */
+    public function deleted(Task $task): void
     {
-        // Get the workspace through board -> plan
-        $workspace = $task->board?->plan?->workspace;
-        if (!$workspace) return;
-
-        // Determine who gets the notification
-        // If assigned to someone, only they get it. Otherwise all workspace members.
-        if ($task->assigned_to) {
-            $recipients = User::where('id', $task->assigned_to)->get();
-        } else {
-            $recipients = $workspace->members()->get();
-        }
-
-        foreach ($recipients as $recipient) {
-            $settings = $recipient->notification_settings ?? [
-                'email_enabled' => true, 
-                'types' => ['task_created', 'task_updated'],
-                'exclude_self' => false
-            ];
-
-            // 1. Check if email notifications are enabled globally for user
-            if (!($settings['email_enabled'] ?? false)) continue;
-
-            // 2. Check if the type is enabled for user
-            if (!in_array($type, $settings['types'] ?? [])) continue;
-
-            // 3. Exclude self if configured
-            if (($settings['exclude_self'] ?? false) && Auth::id() === $recipient->id) continue;
-
-            $mail = new emailTaskNotification($task);
-
-            $startDate = $task->start_date ? \Illuminate\Support\Carbon::parse($task->start_date) : null;
-            $isFuture = $startDate && $startDate->isFuture();
-
-            // Determine timing
-            try {
-                if ($isFuture) {
-                    FacadesMail::to($recipient->email)->later($startDate, $mail);
-                } else {
-                    FacadesMail::to($recipient->email)->send($mail);
-                }
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("SMTP Error in TaskObserver: " . $e->getMessage());
+        if ($task->google_calendar_event_id) {
+            $user = $task->workingBy ?: $task->assignee ?: $task->creator;
+            if ($user && $user->google_token) {
+                $this->dispatchSync($task, 'deleted', $task->google_calendar_event_id, $user->id);
             }
-
-            // Log the email intent
-            EmailLog::create([
-                'task_id' => $task->id,
-                'sender_id' => Auth::id(),
-                'receiver_id' => $recipient->id,
-                'type' => $type,
-                'sent_at' => $isFuture ? $startDate : now()
-            ]);
         }
+    }
+
+    /**
+     * Helper to dispatch sync job.
+     * Works perfectly on shared hosting (dispatchAfterResponse).
+     */
+    protected function dispatchSync(Task $task, string $action, ?string $eventId = null, ?int $userId = null)
+    {
+        // Using dispatch(...)->afterResponse() ensures the user doesn't wait for Google API in web requests
+        // while still satisfying the 'no persistent worker' shared hosting environment.
+        SyncTaskToGoogleCalendar::dispatch(
+            $task->id, 
+            $action, 
+            $eventId ?: $task->google_calendar_event_id, 
+            $userId
+        )->afterResponse();
     }
 }

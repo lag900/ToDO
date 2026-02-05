@@ -33,6 +33,8 @@ class NotificationLogicTest extends TestCase
         // Setup Workspace (Manual)
         $this->workspace = Workspace::create([
             'name' => 'Test Workspace',
+            'type' => 'company',
+            'intent' => 'manage projects',
             'owner_id' => $this->creator->id
         ]);
 
@@ -46,12 +48,14 @@ class NotificationLogicTest extends TestCase
         $plan = Plan::create([
             'name' => 'Test Plan',
             'workspace_id' => $this->workspace->id,
-            'description' => 'Desc'
+            'description' => 'Desc',
+            'user_id' => $this->creator->id
         ]);
         
         $board = Board::create([
             'name' => 'Test Board',
-            'plan_id' => $plan->id
+            'plan_id' => $plan->id,
+            'user_id' => $this->creator->id
         ]);
     }
 
@@ -59,6 +63,7 @@ class NotificationLogicTest extends TestCase
     public function it_notifies_assignee_when_task_created()
     {
         Mail::fake();
+        $this->actingAs($this->creator);
 
         $task = Task::create([
             'title' => 'New Task',
@@ -68,7 +73,11 @@ class NotificationLogicTest extends TestCase
             'status' => 'todo'
         ]);
 
-        // Actor is Creator
+        // TaskObserver already dispatches the job, but we are testing the logic manually in the handle() 
+        // to verify shouldNotify works as expected. 
+        // We can just verify if the job WAS dispatched or just check the handle directly.
+        // For the sake of this test, we verify the RESULT after the job handles.
+        
         (new NotifyWorkspaceMembers($task, 'task_created', [], $this->creator))->handle();
 
         // Assignee should receive email
