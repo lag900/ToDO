@@ -32,7 +32,7 @@ class TaskService
                     $q->whereIn('workspace_id', $workspaceIds);
                 })
                 ->where(function ($query) use ($user) {
-                    $query->whereNull('assigned_to')
+                    $query->where('is_public', true)
                           ->orWhere('assigned_to', $user->id)
                           ->orWhere('created_by', $user->id);
                 })
@@ -63,9 +63,9 @@ class TaskService
             })
             ->where(function ($query) use ($user) {
                 // Visibility Logic: 
-                // 1. Unassigned tasks are visible to everyone in the workspace
-                // 2. Assigned tasks are ONLY visible to the creator and the assignee
-                $query->whereNull('assigned_to')
+                // 1. Public tasks (is_public=true) are visible to everyone in the workspace
+                // 2. Assigned/Private tasks are ONLY visible to the creator and the assignee
+                $query->where('is_public', true)
                       ->orWhere('assigned_to', $user->id)
                       ->orWhere('created_by', $user->id);
             })
@@ -134,8 +134,13 @@ class TaskService
                 }
             }
 
-            if (isset($data['assigned_to'])) {
+            if (isset($data['assigned_to']) && !empty($data['assigned_to'])) {
                 $data['assigned_by_id'] = Auth::id();
+            }
+
+            // Visibility Logic: Default to public for workspace/team visibility
+            if (!isset($data['is_public'])) {
+                $data['is_public'] = true;
             }
 
             // Create the task with enforced mappings
@@ -268,7 +273,7 @@ class TaskService
             }
 
             // New: Log other field changes
-            $fieldsToLog = ['priority', 'description', 'deadline', 'start_date'];
+            $fieldsToLog = ['priority', 'description', 'deadline', 'start_date', 'is_public'];
             foreach ($fieldsToLog as $field) {
                 if (array_key_exists($field, $data)) {
                     $oldVal = $task->getOriginal($field);
@@ -478,7 +483,7 @@ class TaskService
              $q->where(function($query) use ($user) {
                  $query->where('assigned_to', $user->id)
                        ->orWhere('created_by', $user->id)
-                       ->orWhereNull('assigned_to');
+                       ->orWhere('is_public', true);
              })
              ->with(['assignee', 'creator', 'subtasks', 'checklists', 'workingBy'])
              ->orderByRaw("FIELD(priority, 'urgent', 'high', 'medium', 'low') ASC")

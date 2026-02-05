@@ -18,6 +18,13 @@ class Workspace extends Model
         'settings' => 'array'
     ];
 
+    protected $appends = ['user_role'];
+
+    public function getUserRoleAttribute()
+    {
+        return $this->pivot ? $this->pivot->role : null;
+    }
+
     public function owner()
     {
         return $this->belongsTo(User::class, 'owner_id');

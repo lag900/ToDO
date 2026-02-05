@@ -230,6 +230,28 @@
                     </option>
                   </select>
                 </div>
+
+                <!-- Visibility Toggle -->
+                <div class="space-y-2">
+                   <label class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Visibility</label>
+                   <div class="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
+                      <span class="text-xs font-bold text-slate-600 dark:text-slate-300">{{ editedTask.is_public ? 'Public Team Task' : 'Private Task' }}</span>
+                      <button 
+                        @click="editedTask.is_public = !editedTask.is_public; updateTask()"
+                        :disabled="!canEditFull"
+                        :class="[
+                          'w-11 h-6 rounded-full transition-all relative',
+                          editedTask.is_public ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600',
+                          {'opacity-50 cursor-not-allowed': !canEditFull}
+                        ]"
+                      >
+                         <div :class="[
+                           'absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm',
+                           editedTask.is_public ? 'left-6' : 'left-1'
+                         ]"></div>
+                      </button>
+                   </div>
+                </div>
               </div>
               <div class="space-y-2">
                 <label :for="'due-date-' + taskId" class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Due Date</label>
@@ -339,7 +361,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'updated']);
 
-const canEditFull = computed(() => props.role === 'owner' || props.role === 'editor');
+const canEditFull = computed(() => {
+  if (!auth.user || !task.value) return false;
+  return props.role === 'owner' || props.role === 'editor' || task.value.created_by === auth.user.id;
+});
 const canChangeStatus = computed(() => true);
 const canDelete = computed(() => props.role === 'owner');
 
@@ -351,7 +376,7 @@ const syncTimeout = ref(null);
 const showDeliveryModal = ref(false);
 const showAddSubtask = ref(false);
 
-const editedTask = ref({ title: '', description: '', priority: '', status: '', due_date: '', due_time: '', start_date: '', start_time: '', assigned_to: null, is_reviewed: false });
+const editedTask = ref({ title: '', description: '', priority: '', status: '', due_date: '', due_time: '', start_date: '', start_time: '', assigned_to: null, is_reviewed: false, is_public: true });
 
 const fetchTask = async () => {
   try {
@@ -394,7 +419,8 @@ const syncLocalStateFromTask = () => {
       start_date: formatDateForInput(task.value.start_date),
       start_time: formatTimeForInput(task.value.start_date),
       assigned_to: task.value.assigned_to,
-      is_reviewed: !!task.value.is_reviewed
+      is_reviewed: !!task.value.is_reviewed,
+      is_public: !!task.value.is_public
     };
 };
 
@@ -410,7 +436,6 @@ const updateTask = async () => {
   const deadline = formatToBackend(editedTask.value.due_date, editedTask.value.due_time || '23:59');
   const start_date = formatToBackend(editedTask.value.start_date, editedTask.value.start_time || '09:00');
 
-  // Comprehensive Change Check
   const hasChanged = 
     editedTask.value.title !== task.value.title || 
     editedTask.value.description !== task.value.description ||
@@ -418,6 +443,7 @@ const updateTask = async () => {
     editedTask.value.status !== task.value.status ||
     editedTask.value.assigned_to !== task.value.assigned_to ||
     editedTask.value.is_reviewed !== !!task.value.is_reviewed ||
+    editedTask.value.is_public !== !!task.value.is_public ||
     editedTask.value.due_date !== (task.value.deadline ? formatDate(task.value.deadline) : '') ||
     editedTask.value.due_time !== (task.value.deadline ? formatTime(task.value.deadline) : '') ||
     editedTask.value.start_date !== (task.value.start_date ? formatDate(task.value.start_date) : '') ||

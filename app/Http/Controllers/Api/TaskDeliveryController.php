@@ -18,7 +18,7 @@ class TaskDeliveryController extends Controller
         // Permission check
         $workspace = $task->board->plan->workspace;
         $membership = $workspace->members()->where('users.id', Auth::id())->first();
-        $role = $membership ? $membership->pivot->role : ($workspace->owner_id === Auth::id() ? 'owner' : null);
+        $role = $membership ? $membership->pivot->role : null;
 
         if (!$role || $role === 'viewer') {
             return response()->json(['message' => 'Unauthorized to deliver tasks.'], 403);
@@ -84,8 +84,13 @@ class TaskDeliveryController extends Controller
         $task = $delivery->task;
         $workspace = $task->board->plan->workspace;
         
+        $isWorkspaceOwner = $workspace->members()
+            ->where('user_id', Auth::id())
+            ->where('role', 'owner')
+            ->exists();
+            
         // Permission check: Owner of delivery or Owner of workspace
-        if ($delivery->user_id !== Auth::id() && $workspace->owner_id !== Auth::id()) {
+        if ($delivery->user_id !== Auth::id() && !$isWorkspaceOwner) {
             return response()->json(['message' => 'Unauthorized to delete this delivery.'], 403);
         }
 

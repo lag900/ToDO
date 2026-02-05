@@ -17,7 +17,8 @@ class WorkspaceController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        return response()->json($user->workspaces()->with(['plans.boards', 'members'])->get());
+        $workspaces = $user->workspaces()->with(['plans.boards', 'members'])->get();
+        return response()->json($workspaces);
     }
 
     public function store(Request $request)
@@ -65,8 +66,14 @@ class WorkspaceController extends Controller
         try {
             $workspace = Workspace::findOrFail($id);
 
-            if (intval($workspace->owner_id) !== intval(Auth::id())) {
-                return response()->json(['message' => 'Only the owner can delete this workspace.'], 403);
+            $user = Auth::user();
+            $isOwner = $workspace->members()
+                ->where('users.id', $user->id)
+                ->wherePivot('role', 'owner')
+                ->exists();
+
+            if (!$isOwner) {
+                return response()->json(['message' => 'Only workspace owners can delete this workspace.'], 403);
             }
 
             $workspace->delete();
@@ -84,8 +91,13 @@ class WorkspaceController extends Controller
 
     public function updateSettings(Request $request, Workspace $workspace)
     {
-        if (intval($workspace->owner_id) !== intval(Auth::id())) {
-            return response()->json(['message' => 'Only the owner can modify workspace settings.'], 403);
+        $isOwner = $workspace->members()
+            ->where('workspace_user.user_id', Auth::id())
+            ->where('workspace_user.role', 'owner')
+            ->exists();
+
+        if (!$isOwner) {
+            return response()->json(['message' => 'Only workspace owners can modify settings.'], 403);
         }
 
         $validated = $request->validate([

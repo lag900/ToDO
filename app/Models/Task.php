@@ -37,12 +37,14 @@ class Task extends Model
         'google_calendar_event_id',
         'reminder_minutes',
         'task_type',
-        'contact_info'
+        'contact_info',
+        'is_public'
     ];
-
+    
     protected $casts = [
         'start_date' => 'datetime',
         'deadline' => 'datetime',
+        'is_public' => 'boolean',
     ];
 
     public function board(): BelongsTo

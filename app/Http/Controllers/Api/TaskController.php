@@ -22,27 +22,26 @@ class TaskController extends Controller
     {
         $workspaceId = $request->query('workspace_id');
 
-        // Feature: Refresh Logic
-        // If there are tasks in 'review' (testing) and they are marked as reviewed (is_reviewed=true),
-        // automatically move them to 'complete' (done).
-        if ($workspaceId && $workspaceId !== 'all') {
-             Task::whereHas('board.plan', function ($q) use ($workspaceId) {
-                $q->where('workspace_id', $workspaceId);
-             })
-             ->where('status', 'testing')
-             ->where('is_reviewed', true)
-             ->update(['status' => 'done']);
-        } elseif ($workspaceId === 'all') {
-            // Support global view refresh logic too
-            /** @var \App\Models\User $user */
-            $user = Auth::user();
-            $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
-            Task::whereHas('board.plan', function ($q) use ($workspaceIds) {
-                $q->whereIn('workspace_id', $workspaceIds);
-             })
-             ->where('status', 'testing')
-             ->where('is_reviewed', true)
-             ->update(['status' => 'done']);
+        // Feature: Refresh Logic - Optimized to not run on every poll
+        if ($request->query('refresh') === 'true') {
+            if ($workspaceId && $workspaceId !== 'all') {
+                 Task::whereHas('board.plan', function ($q) use ($workspaceId) {
+                    $q->where('workspace_id', $workspaceId);
+                 })
+                 ->where('status', 'testing')
+                 ->where('is_reviewed', true)
+                 ->update(['status' => 'done']);
+            } elseif ($workspaceId === 'all') {
+                /** @var \App\Models\User $user */
+                $user = Auth::user();
+                $workspaceIds = $user->workspaces()->pluck('workspaces.id')->toArray();
+                Task::whereHas('board.plan', function ($q) use ($workspaceIds) {
+                    $q->whereIn('workspace_id', $workspaceIds);
+                 })
+                 ->where('status', 'testing')
+                 ->where('is_reviewed', true)
+                 ->update(['status' => 'done']);
+            }
         }
         
         // Fix: Support Board View Structure directly
@@ -77,7 +76,8 @@ class TaskController extends Controller
             'assigned_to' => 'sometimes|nullable|exists:users,id',
             'deadline' => 'sometimes|nullable',
             'start_date' => 'sometimes|nullable',
-            'is_reviewed' => 'sometimes|boolean'
+            'is_reviewed' => 'sometimes|boolean',
+            'is_public' => 'sometimes|boolean'
         ]);
 
         $task = $this->taskService->updateTask($task, $validated);

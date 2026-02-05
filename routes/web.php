@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 use App\Http\Controllers\AuthController;
 
@@ -31,7 +32,12 @@ Route::get('/maintain/clear-cache', function () {
 Route::get('/delivery-file/{filename}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'showFile']);
 
 // --- PUBLIC PAGES (Blade) for Google OAuth Compliance ---
-Route::view('/', 'public.landing');
+Route::get('/', function () {
+    if (Auth::check()) {
+        return view('app');
+    }
+    return view('public.landing');
+});
 Route::view('/privacy-policy', 'public.privacy');
 Route::view('/terms-of-service', 'public.terms');
 

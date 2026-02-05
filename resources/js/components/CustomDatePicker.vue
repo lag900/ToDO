@@ -43,8 +43,8 @@ onMounted(() => {
     defaultDate: props.modelValue,
     disableMobile: true, // Force consistent UI on mobile
     onChange: (selectedDates, dateStr) => {
-      // Backend actually expects dd/mm/yyyy in the current Service logic, 
-      // but let's be careful. The user said: "التخزين (Backend): yyyy-mm-dd"
+      // Note: Backend expects dd/mm/yyyy in the current Service logic. 
+      // Storage (Backend): yyyy-mm-dd format is handled during transformation.
       // Wait, the current TaskService.php says:
       // "Helper to convert YYYY-MM-DD from <input type="date"> to DD/MM/YYYY for backend parsing"
       // So the backend ALREADY expects dd/mm/yyyy if it's coming from formatToCustom.

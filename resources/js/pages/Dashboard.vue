@@ -2,9 +2,9 @@
   <div class="p-6 transition-all duration-500 min-h-screen bg-slate-50/50 dark:bg-slate-950/50">
     <header class="mb-10 space-y-6 px-2">
       <!-- Primary Row: Core Navigation -->
-      <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex flex-col xl:flex-row items-center justify-between gap-3">
         <div class="flex items-center gap-6 w-full sm:w-auto">
-          <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-12 lg:h-20 w-auto object-contain">
+          <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-20 lg:h-30  w-auto object-contain">
           <ContextSwitcher @create="openCreateModal" />
         </div>
 
@@ -528,8 +528,16 @@
                         {{ task.priority }}
                       </span>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex flex-col items-end gap-1">
                       <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg block">{{ task.status.replace('_', ' ') }}</span>
+                      <span 
+                        :class="[
+                          'text-[8px] font-black uppercase tracking-tighter px-2 py-0.5 rounded-md border',
+                          task.is_public ? 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-500/10 dark:border-indigo-500/20' : 'bg-slate-50 text-slate-500 border-slate-100 dark:bg-slate-800/50 dark:border-slate-800'
+                        ]"
+                      >
+                        {{ task.is_public ? 'Public Team' : 'Private' }}
+                      </span>
                       <template v-if="task.status === 'done'">
                          <span v-if="task.delivery" class="text-[8px] font-black uppercase text-emerald-500 mt-1">Delivered</span>
                          <span v-else class="text-[8px] font-black uppercase text-amber-500 mt-1">Pending Delivery</span>
@@ -591,15 +599,15 @@
 
 
     <!-- Task Details Drawer -->
-    <TaskDetails v-if="selectedTaskId" :taskId="selectedTaskId" :role="userRole" @close="selectedTaskId = null" @updated="fetchTasks" />
+    <TaskDetails v-if="selectedTaskId" :taskId="selectedTaskId" :role="userRole" @close="selectedTaskId = null" @updated="fetchTasks(true)" />
 
     <!-- Enhanced Task Modal -->
-    <div v-show="showModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-4 z-[9999]">
-      <div class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-md p-10 border border-slate-200 dark:border-slate-800 transition-all duration-500 relative overflow-hidden">
+    <div v-show="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 z-[9999] overflow-y-auto">
+      <div class="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-[95%] sm:max-w-lg lg:max-w-xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-800 transition-all duration-500 relative animate-in zoom-in-95 duration-200">
         
         <!-- Suggestion Banner -->
         <transition name="fade">
-          <div v-if="suggestion" class="absolute top-0 left-0 right-0 bg-indigo-600 text-white px-6 py-2 flex items-center justify-between z-10">
+          <div v-if="suggestion" class="absolute top-0 left-0 right-0 bg-indigo-600 text-white px-6 py-2 flex items-center justify-between z-20 rounded-t-[2rem] sm:rounded-t-[3rem]">
              <div class="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                 <span class="text-[10px] font-black uppercase tracking-widest">{{ suggestion.message }}</span>
@@ -608,20 +616,22 @@
           </div>
         </transition>
 
-        <div class="mb-8 pt-4">
-            <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-2">Create Task</h2>
-            <p class="text-slate-500 text-sm">Define your next milestone</p>
+        <!-- Fixed Header -->
+        <div class="px-5 sm:px-8 py-4 sm:py-6 sticky top-0 bg-white dark:bg-slate-900 z-30 rounded-t-[2rem] sm:rounded-t-[3rem] border-b border-slate-50 dark:border-slate-800/50">
+            <h2 class="text-xl sm:text-2xl font-black text-slate-800 dark:text-white mb-0.5">Create Task</h2>
+            <p class="text-slate-500 text-[10px] sm:text-xs">Define your next milestone</p>
         </div>
         
-        <div class="space-y-6">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto px-5 sm:px-8 py-6 space-y-5 custom-scrollbar-hide">
           <!-- Priority Selector -->
           <div>
-            <label class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Urgency</label>
-            <div class="flex p-1 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-1">
+            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Urgency</label>
+            <div class="flex p-1 bg-slate-50 dark:bg-slate-800/50 rounded-2xl gap-1 overflow-x-auto no-scrollbar">
                <button v-for="p in ['low', 'medium', 'high', 'urgent']" :key="p" 
                  @click="newTask.priority = p"
                  :class="[
-                   'flex-1 py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all',
+                   'flex-1 min-w-[70px] py-2.5 sm:py-3 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all',
                    newTask.priority === p 
                     ? (p === 'urgent' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30' : 
                        p === 'high' ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' :
@@ -635,46 +645,42 @@
             </div>
           </div>
 
-
-
-
           <div>
-            <label for="task-title" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Task Title</label>
-            <input id="task-title" name="title" v-model="newTask.title" type="text" placeholder="What needs to be done?" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium">
+            <label for="task-title" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Task Title</label>
+            <input id="task-title" v-model="newTask.title" type="text" placeholder="What needs to be done?" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base">
           </div>
 
-          <!-- Start Date & Time Row -->
-          <div class="grid grid-cols-2 gap-4">
+          <!-- Dates Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div>
-                <label for="task-start-date" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Date</label>
-                <CustomDatePicker id="task-start-date" name="start_date" v-model="newTask.start_date" />
+                <label for="task-start-date" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Date</label>
+                <CustomDatePicker id="task-start-date" v-model="newTask.start_date" />
              </div>
              <div>
-                <label for="task-start-time" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Time</label>
-                <input id="task-start-time" name="start_time" v-model="newTask.start_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+                <label for="task-start-time" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Time</label>
+                <input id="task-start-time" v-model="newTask.start_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
              </div>
           </div>
 
-          <!-- Due Date & Time Row -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div>
-                <label for="task-due-date" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Date</label>
-                <CustomDatePicker id="task-due-date" name="due_date" v-model="newTask.due_date" />
+                <label for="task-due-date" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Date</label>
+                <CustomDatePicker id="task-due-date" v-model="newTask.due_date" />
              </div>
              <div>
-                <label for="task-due-time" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Time</label>
-                <input id="task-due-time" name="due_time" v-model="newTask.due_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+                <label for="task-due-time" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Time</label>
+                <input id="task-due-time" v-model="newTask.due_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
              </div>
           </div>
 
           <div>
-            <label for="task-description" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Description</label>
-            <textarea id="task-description" name="description" v-model="newTask.description" placeholder="Add some context..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm" rows="3"></textarea>
+            <label for="task-description" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Description</label>
+            <textarea id="task-description" v-model="newTask.description" placeholder="Add some context..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm" rows="3"></textarea>
           </div>
 
-          <!-- Assignee Selector (Moved to Bottom) -->
+          <!-- Assignee Selector -->
           <div v-if="currentWorkspace && currentWorkspace.members">
-            <label for="task-assignee" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Assign to</label>
+            <label for="task-assignee" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Assign to</label>
             <select id="task-assignee" v-model="newTask.assigned_to" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-white">
               <option :value="null">Unassigned</option>
               <option v-for="member in currentWorkspace.members" :key="member.id" :value="member.id">
@@ -682,53 +688,73 @@
               </option>
             </select>
           </div>
+          
+          <!-- Visibility Toggle -->
+          <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+             <div class="space-y-1">
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">Public Visibility</p>
+                <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400">Everyone in workspace can see this task</p>
+             </div>
+             <button 
+               @click="newTask.is_public = !newTask.is_public"
+               :class="[
+                 'w-12 h-6 rounded-full transition-all relative',
+                 newTask.is_public ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'
+               ]"
+             >
+                <div :class="[
+                  'absolute top-1 w-4 h-4 bg-white rounded-full transition-all shadow-sm',
+                  newTask.is_public ? 'left-7' : 'left-1'
+                ]"></div>
+             </button>
+          </div>
 
 
           <!-- Notification Info -->
-          <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+          <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
              <div class="flex gap-3">
                 <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center shrink-0">
                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                 </div>
                 <div class="space-y-1">
-                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">Smart Notifications</p>
-                   <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">You will receive an immediate notification via Gmail. Reminders will be sent through Google Calendar if a start date is set.</p>
+                   <p class="text-[10px] font-black uppercase tracking-widest text-slate-700 dark:text-slate-200">Notifications</p>
+                   <p class="text-[9px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed uppercase tracking-wide">Gmail and Calendar automation enabled.</p>
                 </div>
              </div>
           </div>
+        </div>
 
-          <div class="flex gap-4 pt-4">
-            <button @click="showModal = false" class="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors">Cancel</button>
-            <button @click="saveTask" :disabled="loading" class="flex-1 px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 transition-all">
-
-              {{ loading ? 'CREATING...' : 'CREATE NOW' }}
-            </button>
-          </div>
+        <!-- Fixed Footer -->
+        <div class="px-5 sm:px-8 py-4 sm:py-6 flex gap-3 sm:gap-4 sticky bottom-0 bg-white dark:bg-slate-900 z-10 rounded-b-[2rem] sm:rounded-b-[3rem] border-t border-slate-50 dark:border-slate-800">
+          <button @click="showModal = false" class="flex-1 px-4 py-3 sm:py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors text-xs sm:text-sm">Cancel</button>
+          <button @click="saveTask" :disabled="loading" class="flex-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 transition-all text-xs sm:text-sm">
+            {{ loading ? 'CREATING...' : 'CREATE NOW' }}
+          </button>
         </div>
       </div>
     </div>
     <!-- Create Workspace Modal -->
-    <div v-if="showCreateWorkspaceModal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-4 z-[9999]">
-      <div class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-md p-10 border border-slate-200 dark:border-slate-800 relative overflow-hidden animate-in zoom-in-95 duration-200">
+    <div v-if="showCreateWorkspaceModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 z-[9999] overflow-y-auto">
+      <div class="bg-white dark:bg-slate-900 rounded-[2rem] sm:rounded-[3rem] shadow-2xl w-full max-w-[95%] sm:max-w-md max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-800 relative overflow-hidden animate-in zoom-in-95 duration-200">
         
-        <div class="mb-8 pt-4">
-            <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-2">New Context</h2>
-            <p class="text-slate-500 text-sm">Create a separate space for your work.</p>
+        <div class="px-5 sm:px-10 py-6 sm:py-8 border-b border-slate-50 dark:border-slate-800/50">
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white mb-1">New Context</h2>
+            <p class="text-slate-500 text-xs sm:text-sm">Create a separate space for your work.</p>
         </div>
         
-        <div class="space-y-6">
+        <div class="flex-1 overflow-y-auto p-5 sm:p-10 space-y-6">
           <div>
-            <label class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Context Name</label>
-            <input v-model="newWorkspace.name" type="text" placeholder="e.g. My Side Hustle" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium">
+            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Context Name</label>
+            <input v-model="newWorkspace.name" type="text" placeholder="e.g. My Side Hustle" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base">
           </div>
 
           <div>
-             <label class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Type</label>
+             <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Type</label>
              <div class="grid grid-cols-3 gap-2">
                 <button v-for="type in ['Personal', 'Work', 'Team']" :key="type"
                    @click="newWorkspace.type = type"
                    :class="[
-                     'py-3 rounded-xl text-[12px] font-black uppercase tracking-widest transition-all border border-transparent',
+                     'py-3 rounded-xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest transition-all border border-transparent',
                      newWorkspace.type === type 
                        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30' 
                        : 'bg-slate-50 dark:bg-slate-800 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -740,17 +766,16 @@
           </div>
 
           <div>
-            <label class="block text-[12px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Purpose</label>
-            <input v-model="newWorkspace.intent" type="text" placeholder="Briefly describe what this is for..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm">
+            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Purpose</label>
+            <input v-model="newWorkspace.intent" type="text" placeholder="Briefly describe what this is for..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm">
           </div>
+        </div>
 
-          <div class="flex gap-4 pt-4">
-            <button @click="showCreateWorkspaceModal = false" class="flex-1 px-6 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors">Cancel</button>
-            <button @click="createWorkspace" class="flex-1 px-6 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 transition-all">
-
-              CREATE CONTEXT
-            </button>
-          </div>
+        <div class="p-5 sm:p-10 pt-4 flex gap-4 border-t border-slate-50 dark:border-slate-800">
+          <button @click="showCreateWorkspaceModal = false" class="flex-1 px-6 py-3.5 sm:py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors text-xs sm:text-sm">Cancel</button>
+          <button @click="createWorkspace" class="flex-1 px-6 py-3.5 sm:py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 transition-all text-xs sm:text-sm">
+            CREATE CONTEXT
+          </button>
         </div>
       </div>
     </div>
@@ -916,7 +941,7 @@
 
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { useWorkspaceStore } from '../stores/workspace';
@@ -984,15 +1009,20 @@ const checkMobile = () => {
 };
 
 
+let scrollTimeout = null;
 const handleBoardScroll = (e) => {
-  if (!isMobile.value) return;
-  const scrollLeft = e.target.scrollLeft;
-  const width = e.target.offsetWidth;
-  const newIndex = Math.round(scrollLeft / width);
-  if (newIndex !== activeMobileColumnIndex.value) {
-    activeMobileColumnIndex.value = newIndex;
-    if (navigator.vibrate) navigator.vibrate(5);
-  }
+  if (!isMobile.value || scrollTimeout) return;
+  
+  scrollTimeout = setTimeout(() => {
+    const scrollLeft = e.target.scrollLeft;
+    const width = e.target.offsetWidth;
+    const newIndex = Math.round(scrollLeft / width);
+    if (newIndex !== activeMobileColumnIndex.value) {
+      activeMobileColumnIndex.value = newIndex;
+      if (navigator.vibrate) navigator.vibrate(5);
+    }
+    scrollTimeout = null;
+  }, 100);
 };
 
 const activeDragTaskId = ref(null);
@@ -1021,14 +1051,20 @@ const handleTaskTouchMove = () => {
 };
 
 const updateTaskStatus = async (task, newStatus) => {
+    const originalStatus = task.status;
     try {
-        const originalStatus = task.status;
         task.status = newStatus; // Optimistic update
+        // Find index in tasks.value to ensure consistency
+        const idx = tasks.value.findIndex(t => t.id === task.id);
+        if (idx !== -1) tasks.value[idx].status = newStatus;
+
         await axios.patch(`/api/tasks/${task.id}`, { status: newStatus });
-        await fetchTasks();
-        // Optional: notification or success state
+        // After successful patch, we don't necessarily need a full fetchTasks() immediately 
+        // unless we expect other side effects (like auto-complete triggers)
     } catch (error) {
-        fetchTasks(); // Revert on failure
+        task.status = originalStatus; // Revert on failure
+        const idx = tasks.value.findIndex(t => t.id === task.id);
+        if (idx !== -1) tasks.value[idx].status = originalStatus;
         alert('Action failed: ' + (error.response?.data?.message || 'Server error'));
     }
 };
@@ -1066,8 +1102,27 @@ const vClickOutside = {
 onMounted(() => {
   checkMobile();
   window.addEventListener('resize', checkMobile);
+  
+  // Real-time Update Logic: Refresh on Window Focus
+  window.addEventListener('focus', () => {
+    fetchTasks(true); // silent refresh
+  });
+
+  // Smart Polling (Fall-back for WebSockets)
+  const pollInterval = setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        fetchTasks(true);
+    }
+  }, 30000); // 30 seconds polling for background updates
+
   // Ensure workspaces are loaded on start
   workspaceStore.fetchWorkspaces();
+
+  onUnmounted(() => {
+    window.removeEventListener('resize', checkMobile);
+    window.removeEventListener('focus', fetchTasks);
+    clearInterval(pollInterval);
+  });
 });
 
 
@@ -1090,7 +1145,7 @@ const allSubtasksDone = (task) => {
 
 const userRole = computed(() => {
   if (!currentWorkspace.value || !auth.user) return 'viewer';
-  if (currentWorkspace.value.owner_id === auth.user.id) return 'owner';
+  if (String(currentWorkspace.value.owner_id) === String(auth.user.id)) return 'owner';
   const member = currentWorkspace.value.members?.find(m => m.id === auth.user.id);
   return member?.pivot?.role || currentWorkspace.value.pivot?.role || 'viewer';
 });
@@ -1177,7 +1232,8 @@ const resetNewTask = () => {
     due_time: '',
     start_date: '',
     start_time: '',
-    assigned_to: null
+    assigned_to: null,
+    is_public: true
   };
 };
 
@@ -1190,7 +1246,8 @@ const newTask = ref({
   due_time: '',
   start_date: '',
   start_time: '',
-  assigned_to: null
+  assigned_to: null,
+  is_public: true
 });
 
 const suggestion = ref(null);
@@ -1327,22 +1384,25 @@ const openModal = () => {
   showModal.value = true;
 };
 
-const fetchTasks = async () => {
+const fetchTasks = async (silent = false) => {
   const wsId = workspaceStore.globalMode ? 'all' : currentWorkspace.value?.id;
   if (!wsId && !workspaceStore.globalMode) return;
   
-  loading.value = true;
+  if (!silent) loading.value = true;
   try {
     const response = await axios.get(`/api/tasks`, {
         params: { workspace_id: wsId }
     });
-    // Ensure we receive a flat array
-    tasks.value = Array.isArray(response.data) ? response.data : [];
+    
+    // Compare and update only if different to prevent UI flicker
+    const newData = Array.isArray(response.data) ? response.data : [];
+    if (JSON.stringify(tasks.value) !== JSON.stringify(newData)) {
+        tasks.value = newData;
+    }
   } catch (error) {
     console.error('Error fetching tasks:', error);
-    // Don't clear tasks on failure to keep UI stable during brief offline/errors
   } finally {
-    loading.value = false;
+    if (!silent) loading.value = false;
   }
 };
 
@@ -1543,31 +1603,6 @@ const formatDate = (dateString) => {
   return `${day}/${month}/${year}`;
 };
 
-const pollingInterval = ref(null);
-
-const startPolling = () => {
-    // Poll every 60 seconds to sync with other devices/tabs
-    pollingInterval.value = setInterval(() => {
-        if (!document.hidden) {
-            fetchTasks();
-        }
-    }, 60000);
-};
-
-onMounted(async () => {
-  await workspaceStore.fetchWorkspaces();
-  if (tasks.value.length === 0) {
-    fetchTasks();
-  }
-  startPolling();
-});
-
-import { onUnmounted } from 'vue';
-onUnmounted(() => {
-    if (pollingInterval.value) {
-        clearInterval(pollingInterval.value);
-    }
-});
 </script>
 
 <style scoped>

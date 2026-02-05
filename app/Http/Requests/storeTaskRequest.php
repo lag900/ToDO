@@ -32,7 +32,8 @@ class storeTaskRequest extends FormRequest
             'start_date' => 'nullable|string',
             'assigned_to' => 'sometimes|nullable|exists:users,id',
             'task_type' => 'sometimes|string|in:general,file,design,call',
-            'contact_info' => 'sometimes|nullable|string'
+            'contact_info' => 'sometimes|nullable|string',
+            'is_public' => 'sometimes|boolean'
         ];
     }
 }
