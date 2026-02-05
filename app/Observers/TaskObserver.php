@@ -13,8 +13,8 @@ class TaskObserver
     public function created(Task $task): void
     {
         // 1. Google Calendar Sync
-        $user = $task->workingBy ?: $task->assignee ?: $task->creator;
-        if ($user && $user->google_token && $task->start_date && $task->deadline) {
+        // Now service handles all workspace members, so we trigger if dates are present
+        if ($task->start_date && $task->deadline) {
             $this->dispatchSync($task, 'created');
         }
 
@@ -28,21 +28,10 @@ class TaskObserver
     public function updated(Task $task): void
     {
         // 1. Google Calendar Sync logic
-        $calendarFields = ['title', 'description', 'start_date', 'deadline', 'working_by_id', 'assigned_to'];
+        $calendarFields = ['title', 'description', 'start_date', 'deadline', 'working_by_id', 'assigned_to', 'is_public'];
         
         if ($task->wasChanged($calendarFields)) {
-            if (($task->wasChanged('working_by_id') || $task->wasChanged('assigned_to')) && $task->getOriginal('google_calendar_event_id')) {
-                $oldUserId = $task->getOriginal('working_by_id') ?: $task->getOriginal('assigned_to');
-                if ($oldUserId) {
-                    $this->dispatchSync($task, 'deleted', $task->getOriginal('google_calendar_event_id'), $oldUserId);
-                    $task->google_calendar_event_id = null; // Reset locally
-                }
-            }
-
-            $user = $task->workingBy ?: $task->assignee ?: $task->creator;
-            if ($user && $user->google_token) {
-                $this->dispatchSync($task, 'updated');
-            }
+            $this->dispatchSync($task, 'updated');
         }
 
         // 2. Email Notifications logic
@@ -71,12 +60,8 @@ class TaskObserver
      */
     public function deleted(Task $task): void
     {
-        if ($task->google_calendar_event_id) {
-            $user = $task->workingBy ?: $task->assignee ?: $task->creator;
-            if ($user && $user->google_token) {
-                $this->dispatchSync($task, 'deleted', $task->google_calendar_event_id, $user->id);
-            }
-        }
+        // Global sync handles deletion for all related users
+        $this->dispatchSync($task, 'deleted');
     }
 
     /**

@@ -7,6 +7,7 @@ use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
 use App\Models\User;
 use App\Models\Task;
+use App\Models\GoogleCalendarEvent;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -85,70 +86,107 @@ class GoogleCalendarService
     }
 
     /**
-     * Main sync logic to handle create/update/delete.
+     * Main sync logic to handle create/update/delete for ANY workspace member.
      * Tailored for shared hosting (handles recreations cleanly).
      */
     public function handleSync(Task $task, string $action, ?string $oldEventId = null, ?int $oldUserId = null)
     {
         try {
-            // Case 1: Task Deleted (or being moved away from a user)
+            // Case 1: Task Deleted
             if ($action === 'deleted') {
-                $targetUserId = $oldUserId ?: ($task->working_by_id ?: $task->assigned_to ?: $task->created_by);
-                $targetEventId = $oldEventId ?: $task->google_calendar_event_id;
-
-                if ($targetUserId && $targetEventId) {
-                    $user = User::find($targetUserId);
-                    if ($user) $this->deleteEvent($user, $targetEventId);
+                if ($oldUserId && $oldEventId) {
+                    $user = User::find($oldUserId);
+                    if ($user) {
+                        $this->deleteEvent($user, $oldEventId);
+                        GoogleCalendarEvent::where('task_id', $task->id)
+                            ->where('user_id', $oldUserId)
+                            ->delete();
+                    }
+                } else {
+                    $events = GoogleCalendarEvent::where('task_id', $task->id)->get();
+                    foreach ($events as $gEvent) {
+                        /** @var GoogleCalendarEvent $gEvent */
+                        if ($gEvent->user) {
+                            $this->deleteEvent($gEvent->user, $gEvent->google_event_id);
+                        }
+                        $gEvent->delete();
+                    }
                 }
                 return;
             }
 
-            // Case 2: Create or Update
-            // Rule: We only sync if there is a start_date and deadline
+            // Case 2: Date changes / Removal
             if (!$task->start_date || !$task->deadline) {
-                if ($task->google_calendar_event_id) {
-                    $user = $task->workingBy ?: $task->assignee ?: $task->creator;
-                    if ($user) $this->deleteEvent($user, $task->google_calendar_event_id);
-                    $task->updateQuietly(['google_calendar_event_id' => null]);
+                $events = GoogleCalendarEvent::where('task_id', $task->id)->get();
+                foreach ($events as $gEvent) {
+                    /** @var GoogleCalendarEvent $gEvent */
+                    if ($gEvent->user) {
+                        $this->deleteEvent($gEvent->user, $gEvent->google_event_id);
+                    }
+                    $gEvent->delete();
                 }
                 return;
             }
 
-            $user = $task->workingBy ?: $task->assignee ?: $task->creator;
-            if (!$user || !$user->google_token) return;
+            // Case 3: Global Sync for Members
+            $workspace = $task->board?->plan?->workspace;
+            if (!$workspace) return;
 
-            // If updating, we delete the old one first to prevent duplicates/ghosts
-            if ($task->google_calendar_event_id) {
-                $this->deleteEvent($user, $task->google_calendar_event_id);
-                $task->updateQuietly(['google_calendar_event_id' => null]);
-            }
-
-            // Create new event
-            if ($this->authenticateForUser($user)) {
-                $service = new Calendar($this->client);
-                $eventData = $this->mapTaskToEvent($task);
-                
-                $createdEvent = $service->events->insert('primary', $eventData);
-                
-                $task->updateQuietly([
-                    'google_calendar_event_id' => $createdEvent->getId()
-                ]);
-            }
-
-        } catch (\Exception $e) {
-            $message = $e->getMessage();
+            $allIntegratedMembers = $workspace->members()->whereNotNull('google_token')->get();
             
-            // Check for Insufficient Permissions (Google Scope issue)
-            if (str_contains($message, 'insufficientPermissions') || $e->getCode() == 403) {
-                Log::error("GCal Sync: Permission Denied for User #{$user->id}. Marking as scope error.");
-                $user->updateQuietly([
-                    'google_calendar_error' => 'Insufficient scopes. Please reconnect your Google account.',
-                    'google_calendar_scopes_granted' => false
-                ]);
-                throw new \App\Exceptions\GoogleCalendarReconnectException($message);
-            } else {
-                Log::error("GCal Service Sync Error: " . $message);
+            $intendedUsers = $allIntegratedMembers;
+            if (!$task->is_public) {
+                $involvedIds = [$task->created_by, $task->assigned_to, $task->working_by_id];
+                $intendedUsers = $allIntegratedMembers->filter(fn($u) => in_array($u->id, $involvedIds));
             }
+            
+            $intendedUserIds = $intendedUsers->pluck('id')->toArray();
+
+            // Cleanup old members
+            $ghostEvents = GoogleCalendarEvent::where('task_id', $task->id)
+                ->whereNotIn('user_id', $intendedUserIds)
+                ->get();
+                
+            foreach ($ghostEvents as $gEvent) {
+                /** @var GoogleCalendarEvent $gEvent */
+                if ($gEvent->user) {
+                    $this->deleteEvent($gEvent->user, $gEvent->google_event_id);
+                }
+                $gEvent->delete();
+            }
+
+            // Push/Update for intended members
+            foreach ($intendedUsers as $user) {
+                try {
+                    $existing = GoogleCalendarEvent::where('task_id', $task->id)
+                        ->where('user_id', $user->id)
+                        ->first();
+
+                    if ($existing) {
+                        $this->deleteEvent($user, $existing->google_event_id);
+                        $existing->delete();
+                    }
+
+                    if ($this->authenticateForUser($user)) {
+                        $service = new Calendar($this->client);
+                        $eventData = $this->mapTaskToEvent($task);
+                        $createdEvent = $service->events->insert('primary', $eventData);
+                        
+                        GoogleCalendarEvent::create([
+                            'task_id' => $task->id,
+                            'user_id' => $user->id,
+                            'google_event_id' => $createdEvent->getId()
+                        ]);
+                    }
+                } catch (\Exception $userEx) {
+                    Log::error("GCal Sync Failed for Member #{$user->id}: " . $userEx->getMessage());
+                    if (str_contains($userEx->getMessage(), 'insufficientPermissions')) {
+                        $user->updateQuietly(['google_calendar_scopes_granted' => false]);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error("GCal Global Sync Error: " . $e->getMessage());
         }
     }
 

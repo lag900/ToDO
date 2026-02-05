@@ -41,12 +41,11 @@ class SyncTaskToGoogleCalendar implements ShouldQueue
      */
     public function handle(GoogleCalendarService $service): void
     {
-        $task = ($this->action === 'deleted') ? null : Task::find($this->taskId);
+        // Try to find the task, including trashed if we are deleting
+        $task = Task::withTrashed()->find($this->taskId);
         
-        // If task is not found and it's not a delete action, skip
-        if (!$task && $this->action !== 'deleted') return;
+        if (!$task) return;
 
-        // Note: For 'deleted' action, $task will be null but handleSync uses oldEventId/oldUserId
-        $service->handleSync($task ?? new Task(), $this->action, $this->oldEventId, $this->oldUserId);
+        $service->handleSync($task, $this->action, $this->oldEventId, $this->oldUserId);
     }
 }
