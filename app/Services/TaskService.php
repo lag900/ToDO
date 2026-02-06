@@ -54,7 +54,7 @@ class TaskService
              return collect();
         }
 
-        // Optimized Query: Using direct join logic via whereHas for strict filtering
+        // Reverted to full eager loading to ensure data consistency and visibility
         return Task::with(['assignee', 'assignedBy', 'board.plan.workspace', 'creator', 'subtasks.creator', 'workingBy', 'deliveries.items', 'deliveries.user'])
             ->whereNull('parent_id')
             ->whereHas('board.plan', function ($q) use ($targetWorkspaceId) {

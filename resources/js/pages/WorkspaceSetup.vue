@@ -27,6 +27,7 @@
               <label for="ws-name" class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Workspace Name</label>
               <input 
                 id="ws-name"
+                name="workspace_name"
                 v-model="form.name" 
                 type="text" 
                 placeholder="e.g. Acme Studio, Personal Roadmap" 

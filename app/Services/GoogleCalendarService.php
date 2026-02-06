@@ -179,9 +179,26 @@ class GoogleCalendarService
                         ]);
                     }
                 } catch (\Exception $userEx) {
-                    Log::error("GCal Sync Failed for Member #{$user->id}: " . $userEx->getMessage());
-                    if (str_contains($userEx->getMessage(), 'insufficientPermissions')) {
-                        $user->updateQuietly(['google_calendar_scopes_granted' => false]);
+                    $msg = $userEx->getMessage();
+                    // Clean up JSON error if present
+                    if ($jsonStart = strpos($msg, '{')) {
+                        $jsonErr = json_decode(substr($msg, $jsonStart), true);
+                        if (isset($jsonErr['error']['message'])) {
+                             $msg = $jsonErr['error']['message'];
+                        }
+                    }
+                    
+                    Log::error("GCal Sync Failed for Member #{$user->id}: " . $msg);
+                    
+                    if (str_contains($msg, 'insufficientPermissions') || 
+                        str_contains($msg, 'ACCESS_TOKEN_SCOPE_INSUFFICIENT') ||
+                        $userEx->getCode() == 403 || 
+                        $userEx->getCode() == 401) {
+                        
+                        $user->updateQuietly([
+                            'google_calendar_scopes_granted' => false,
+                            'google_calendar_error' => 'Insufficient permissions. Please reconnect.'
+                        ]);
                     }
                 }
             }

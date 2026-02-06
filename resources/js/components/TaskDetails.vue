@@ -22,41 +22,85 @@
                 Back
               </button>
 
-              <select 
-                v-model="editedTask.priority" 
-                @change="updateTask"
-                :disabled="!canEditFull"
-                :class="[priorityClass(editedTask.priority), {'cursor-not-allowed opacity-80': !canEditFull}]" 
-                class="text-[10px] font-heading font-extrabold uppercase px-3 py-1 rounded-full tracking-widest border-none outline-none cursor-pointer appearance-none transition-pop active-tap"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+              <!-- Custom Priority Dropdown -->
+              <div class="relative">
+                <button 
+                  @click.stop="togglePriorityMenu"
+                  :disabled="!canEditFull"
+                  :class="[priorityClass(editedTask.priority), {'cursor-not-allowed opacity-80': !canEditFull}]" 
+                  class="flex items-center gap-1.5 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 rounded-full tracking-widest border-none outline-none cursor-pointer transition-pop active-tap"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                  {{ editedTask.priority }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-50 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
 
-              <select 
-                v-model="editedTask.status" 
-                @change="updateTask"
-                :disabled="!canChangeStatus"
-                class="text-[10px] font-heading font-extrabold uppercase px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg tracking-widest border-none outline-none cursor-pointer transition-pop active-tap"
-                :class="{'cursor-not-allowed opacity-80': !canChangeStatus}"
-              >
-                <option value="todo">Plan</option>
-                <option value="in_progress">Work</option>
-                <option v-if="task?.board?.plan?.workspace?.settings?.enable_review_step !== false" value="testing">Review</option>
-                <option value="done">Complete</option>
-              </select>
+                <transition name="scale-in">
+                  <div v-if="showPriorityMenu" class="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                     <div class="space-y-1">
+                        <button 
+                          v-for="p in ['low', 'medium', 'high', 'urgent']" 
+                          :key="p"
+                          @click="selectPriority(p)"
+                          class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group"
+                        >
+                           <div class="flex items-center gap-2">
+                              <div :class="priorityDotClass(p)" class="w-2 h-2 rounded-full ring-1 ring-offset-1 ring-offset-white dark:ring-offset-slate-800"></div>
+                              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{{ p }}</span>
+                           </div>
+                           <svg v-if="editedTask.priority === p" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        </button>
+                     </div>
+                  </div>
+                </transition>
+              </div>
+
+              <!-- Custom Status Dropdown -->
+              <div class="relative">
+                <button 
+                  @click.stop="toggleStatusMenu"
+                  :disabled="!canChangeStatus"
+                  class="flex items-center gap-2 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg tracking-widest border border-slate-200 dark:border-slate-700 cursor-pointer transition-pop active-tap hover:bg-slate-200 dark:hover:bg-slate-700"
+                  :class="{'cursor-not-allowed opacity-80': !canChangeStatus}"
+                >
+                  <span class="text-xs">{{ getStatusIcon(editedTask.status) }}</span>
+                  {{ getStatusLabel(editedTask.status) }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-400 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+
+                <transition name="scale-in">
+                  <div v-if="showStatusMenu" class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                     <div class="space-y-1">
+                        <template v-for="option in statusOptions" :key="option.value">
+                          <button 
+                            @click="selectStatus(option.value)"
+                            class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group text-left"
+                          >
+                             <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-500 group-hover:scale-110 transition-transform">
+                                <span class="text-sm">{{ option.icon }}</span>
+                             </div>
+                             <div class="flex-1">
+                                <p class="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200">{{ option.label }}</p>
+                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{{ option.desc }}</p>
+                             </div>
+                             <div v-if="editedTask.status === option.value" class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
+                          </button>
+                        </template>
+                     </div>
+                  </div>
+                </transition>
+              </div>
 
               <div v-if="editedTask.status === 'testing'" class="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 ml-2 transition-all">
                  <input 
                    type="checkbox" 
-                   id="review-check"
+                   :id="'review-check-' + taskId"
+                   :name="'is_reviewed_' + taskId"
                    v-model="editedTask.is_reviewed" 
                    @change="updateTask" 
                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
                  >
-                 <label for="review-check" class="text-[10px] font-bold uppercase tracking-widest text-blue-700 dark:text-blue-300 cursor-pointer select-none">Mark Reviewed</label>
+                 <label :for="'review-check-' + taskId" class="text-[10px] font-bold uppercase tracking-widest text-blue-700 dark:text-blue-300 cursor-pointer select-none">Mark Reviewed</label>
               </div>
             </div>
             <div class="flex items-center gap-2">
@@ -76,8 +120,12 @@
           <!-- Content -->
           <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
             <!-- Title & Description -->
+            <!-- Title & Description -->
             <section>
+              <label :for="'task-title-' + taskId" class="sr-only">Task Title</label>
               <input 
+                :id="'task-title-' + taskId"
+                name="title"
                 v-model="editedTask.title" 
                 @blur="updateTask"
                 :disabled="!canEditFull"
@@ -85,7 +133,10 @@
                 :class="{'cursor-not-allowed': !canEditFull}"
                 placeholder="Task Title"
               >
+              <label :for="'task-desc-' + taskId" class="sr-only">Task Description</label>
               <textarea 
+                :id="'task-desc-' + taskId"
+                name="description"
                 v-model="editedTask.description" 
                 @blur="updateTask"
                 :disabled="!canEditFull"
@@ -205,6 +256,7 @@
                     <CustomDatePicker :id="'start-date-' + taskId" :name="'start_date_' + taskId" v-model="editedTask.start_date" @change="updateTask" :disabled="!canEditFull" />
                     <input 
                       :id="'start-time-' + taskId"
+                      name="start_time"
                       type="time" 
                       v-model="editedTask.start_time" 
                       @change="updateTask"
@@ -218,6 +270,7 @@
                   <label :for="'assignee-' + taskId" class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Assignee</label>
                   <select 
                     :id="'assignee-' + taskId"
+                    name="assigned_to"
                     v-model="editedTask.assigned_to" 
                     @change="updateTask"
                     :disabled="!canEditFull"
@@ -259,6 +312,7 @@
                   <CustomDatePicker :id="'due-date-' + taskId" :name="'due_date_' + taskId" v-model="editedTask.due_date" @change="updateTask" :disabled="!canEditFull" />
                   <input 
                     :id="'due-time-' + taskId"
+                    name="due_time"
                     type="time" 
                     v-model="editedTask.due_time" 
                     @change="updateTask"
@@ -269,24 +323,83 @@
             </section>
 
             <!-- Sub-tasks -->
+            <!-- Sub-tasks -->
             <section class="space-y-4">
               <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-4">
                   <h3 class="text-sm font-heading font-bold uppercase tracking-[0.2em] text-slate-400">Sub-tasks</h3>
-                  <span v-if="task.subtasks?.length" class="text-[10px] bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-slate-400 font-bold">{{ task.subtasks.length }}</span>
+                  
+                  <!-- Progress Bar -->
+                  <div v-if="task.subtasks?.length" class="flex items-center gap-2">
+                     <div class="h-1.5 w-24 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-indigo-500 transition-all duration-500 ease-out" :style="{ width: subtaskProgress + '%' }"></div>
+                     </div>
+                     <span class="text-[9px] font-black text-slate-400">{{ Math.round(subtaskProgress) }}%</span>
+                  </div>
                 </div>
-                <button v-if="canEditFull" @click="showAddSubtask = true" class="text-[10px] font-heading font-bold text-indigo-600 hover:opacity-80 uppercase tracking-widest flex items-center gap-1 active-tap">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                  Add Sub-task
-                </button>
               </div>
               
-              <div v-if="task.subtasks?.length" class="space-y-2">
-                <div v-for="sub in task.subtasks" :key="sub.id" class="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 group hover:border-indigo-500/30 transition-all active-tap">
-                    <button @click.stop="toggleSubtask(sub)" class="w-5 h-5 rounded-md border-2 border-slate-200 dark:border-slate-700 flex items-center justify-center transition-all hover:border-indigo-500">
-                      <div class="w-2 h-2 rounded-sm bg-indigo-500 opacity-0 group-hover:opacity-20" :class="{'opacity-100': sub.status === 'done'}"></div>
-                    </button>
-                   <span class="flex-1 text-sm font-bold text-slate-700 dark:text-slate-200" :class="{'line-through text-slate-400': sub.status === 'done'}">{{ sub.title }}</span>
+              <div class="space-y-1">
+                <!-- Existing Subtasks -->
+                <transition-group name="list">
+                  <div v-for="sub in task.subtasks" :key="sub.id" class="group flex items-center gap-3 p-2 -mx-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-xl transition-all">
+                      <!-- Checkbox -->
+                      <button 
+                        @click.stop="toggleSubtask(sub)" 
+                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0"
+                        :class="sub.status === 'done' ? 'bg-indigo-500 border-indigo-500' : 'border-slate-300 dark:border-slate-600 hover:border-indigo-500'"
+                      >
+                        <svg v-if="sub.status === 'done'" xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+
+                      <!-- Inline Edit Title -->
+                      <label :for="'subtask-title-' + sub.id" class="sr-only">Subtask Title</label>
+                      <input 
+                        :id="'subtask-title-' + sub.id"
+                        :name="'subtask_title_' + sub.id"
+                        v-model="sub.title" 
+                        @blur="updateSubtaskTitle(sub)"
+                        @keydown.enter="$event.target.blur()"
+                        type="text"
+                        class="flex-1 bg-transparent border-none outline-none text-sm font-medium text-slate-700 dark:text-slate-200 placeholder-slate-400 focus:text-indigo-600 transition-colors"
+                        :class="{'line-through text-slate-400': sub.status === 'done'}"
+                      >
+
+                      <!-- Assignee or Spinner -->
+                      <div class="flex items-center gap-2">
+                          <div v-if="sub.is_optimistic" class="w-4 h-4 rounded-full border-2 border-slate-200 border-t-indigo-500 animate-spin"></div>
+                          <div v-else class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                          <img 
+                            v-if="sub.assigned_to" 
+                            :src="sub.assignee?.avatar || 'https://ui-avatars.com/api/?name=' + sub.assignee?.display_name" 
+                            class="w-5 h-5 rounded-full"
+                            title="Assigned"
+                          >
+                          <button @click="deleteSubtaskId(sub.id)" class="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                          </button>
+                      </div>
+                      </div>
+                  </div>
+                </transition-group>
+
+                <!-- Add New Input (Always Visible) -->
+                <div class="flex items-center gap-3 p-2 -mx-2 opacity-50 focus-within:opacity-100 transition-opacity">
+                   <div class="w-5 h-5 rounded-full border-2 border-slate-200 dark:border-slate-700 border-dashed shrink-0 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                   </div>
+                   <input 
+                       :id="'new-subtask-' + taskId"
+                       name="new_subtask"
+                       ref="newSubtaskInputRef"
+                       v-model="newSubtaskTitle" 
+                       @keydown.enter="createSubtask"
+                       :disabled="isCreatingSubtask"
+                       type="text"
+                       placeholder="Add sub-task..." 
+                       class="flex-1 bg-transparent border-none outline-none text-sm font-medium text-slate-800 dark:text-white placeholder-slate-400 focus:placeholder-slate-300 disabled:opacity-50"
+                   />
+                   <div v-if="newSubtaskTitle" class="text-[10px] font-bold text-slate-300 uppercase tracking-wider animate-in fade-in">Press Enter</div>
                 </div>
               </div>
             </section>
@@ -347,7 +460,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import axios from 'axios';
 import TaskDeliveryModal from './TaskDeliveryModal.vue';
 import CustomDatePicker from './CustomDatePicker.vue';
@@ -373,8 +486,101 @@ const workspaceMembers = ref([]);
 const isSyncing = ref(false);
 const calendarStatus = ref(null);
 const syncTimeout = ref(null);
+const showPriorityMenu = ref(false);
+const showStatusMenu = ref(false);
+
+const togglePriorityMenu = () => { showPriorityMenu.value = !showPriorityMenu.value; showStatusMenu.value = false; };
+const toggleStatusMenu = () => { showStatusMenu.value = !showStatusMenu.value; showPriorityMenu.value = false; };
+
+const closeMenus = (e) => {
+   if (!e.target.closest('.relative')) {
+      showPriorityMenu.value = false;
+      showStatusMenu.value = false;
+   }
+};
+
+onMounted(() => {
+   fetchTask();
+   window.addEventListener('click', closeMenus);
+});
+
+onUnmounted(() => {
+   window.removeEventListener('click', closeMenus);
+});
+
+const selectPriority = (p) => {
+   editedTask.value.priority = p;
+   updateTask();
+   showPriorityMenu.value = false;
+};
+
+const selectStatus = (s) => {
+   editedTask.value.status = s;
+   updateTask();
+   showStatusMenu.value = false;
+};
+
+const priorityDotClass = (p) => {
+  switch (p) {
+    case 'urgent': return 'bg-rose-500 ring-rose-500';
+    case 'high': return 'bg-orange-500 ring-orange-500';
+    case 'medium': return 'bg-indigo-500 ring-indigo-500';
+    default: return 'bg-slate-400 ring-slate-400';
+  }
+};
+
+const getStatusIcon = (s) => {
+   switch(s) {
+      case 'todo': return '📅';
+      case 'in_progress': return '⚡';
+      case 'testing': return '👀';
+      case 'done': return '✅';
+      default: return '⚪';
+   }
+};
+
+const getStatusLabel = (s) => {
+   switch(s) {
+      case 'todo': return 'Plan';
+      case 'in_progress': return 'Work';
+      case 'testing': return 'Review';
+      case 'done': return 'Complete';
+      default: return s;
+   }
+};
+
+const statusOptions = computed(() => {
+   const opts = [
+      { value: 'todo', label: 'Plan', icon: '📅', desc: 'Not started' },
+      { value: 'in_progress', label: 'Work', icon: '⚡', desc: 'Active execution' },
+   ];
+   
+   if (props.task?.board?.plan?.workspace?.settings?.enable_review_step !== false) {
+      opts.push({ value: 'testing', label: 'Review', icon: '👀', desc: 'Quality control' });
+   }
+   
+   opts.push({ value: 'done', label: 'Complete', icon: '✅', desc: 'Finished' });
+   return opts;
+});
+
+const priorityClass = (p) => {
+  switch (p) {
+    case 'urgent': return 'bg-rose-500/10 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 ring-1 ring-rose-500/20';
+    case 'high': return 'bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 ring-1 ring-orange-500/20';
+    case 'medium': return 'bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 ring-1 ring-indigo-500/20';
+    default: return 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 ring-1 ring-slate-200 dark:ring-slate-700';
+  }
+};
 const showDeliveryModal = ref(false);
 const showAddSubtask = ref(false);
+const newSubtaskTitle = ref('');
+const newSubtaskInputRef = ref(null);
+
+const subtaskProgress = computed(() => {
+  if (!task.value?.subtasks?.length) return 0;
+  const done = task.value.subtasks.filter(s => s.status === 'done').length;
+  return (done / task.value.subtasks.length) * 100;
+});
 
 const editedTask = ref({ title: '', description: '', priority: '', status: '', due_date: '', due_time: '', start_date: '', start_time: '', assigned_to: null, is_reviewed: false, is_public: true });
 
@@ -474,8 +680,9 @@ const updateTask = async () => {
     }
 
     emit('updated');
-    // Refresh to get fresh activity logs and relational data
-    fetchTask();
+    // Optimized: Only fetch if we suspect data outside our control changed (like activity log)
+    // Or if we need to refresh specific relations. For simple updates, local merge above is enough.
+    // fetchTask(); // REMOVED: redundant full fetch, we already merged response.data
   } catch (error) {
     console.error('Update failed', error);
     // Rollback UI
@@ -497,15 +704,27 @@ const fetchWorkspaceMembers = async (workspaceId) => {
 };
 
 const toggleSubtask = async (sub) => {
+  if (sub.is_optimistic) return; // Wait for save
+
   const newStatus = sub.status === 'done' ? 'todo' : 'done';
   const originalStatus = sub.status;
+  
+  // Optimistic Update
   sub.status = newStatus;
+  
+  // Update parent task object directly without fetch if possible
+  const subIndex = task.value.subtasks.findIndex(s => s.id === sub.id);
+  if (subIndex !== -1) {
+      task.value.subtasks[subIndex].status = newStatus;
+  }
+
   try {
     await axios.patch(`/api/tasks/${sub.id}`, { status: newStatus });
-    fetchTask();
+    // Silent event for parent to know something changed
     emit('updated');
   } catch (error) { 
     sub.status = originalStatus;
+    if (subIndex !== -1) task.value.subtasks[subIndex].status = originalStatus;
     alert('Toggle failed'); 
   }
 };
@@ -517,6 +736,119 @@ const deleteTask = async () => {
     emit('updated');
     emit('close');
   } catch (error) { alert('Failed to delete'); }
+};
+
+const enableAddSubtask = async () => {
+  showAddSubtask.value = true;
+  // Wait for DOM update to focus input
+  setTimeout(() => {
+    newSubtaskInputRef.value?.focus();
+  }, 100);
+};
+
+const cancelAddSubtask = () => {
+  showAddSubtask.value = false;
+  newSubtaskTitle.value = '';
+};
+
+const isCreatingSubtask = ref(false);
+
+const createSubtask = async () => {
+  const title = newSubtaskTitle.value.trim();
+  if (!title) return;
+  
+  if (isCreatingSubtask.value) return; // Prevent double submit
+  isCreatingSubtask.value = true;
+  
+  // Optimistic UI: Create temporary subtask
+  const tempId = 'temp-' + Date.now();
+  const tempSubtask = {
+    id: tempId,
+    title: title,
+    status: 'todo',
+    board_id: task.value.board_id,
+    parent_id: task.value.id,
+    assigned_to: null,
+    is_optimistic: true,
+    created_at: new Date().toISOString()
+  };
+
+  // 1. Update Local State Immediately
+  if (!task.value.subtasks) task.value.subtasks = [];
+  task.value.subtasks.push(tempSubtask);
+  
+  // Clear input immediately for rapid entry
+  newSubtaskTitle.value = '';
+
+  try {
+    const payload = {
+      title: title,
+      parent_id: task.value.id,
+      status: 'todo',
+      board_id: task.value.board_id,
+      priority: 'medium',
+      task_type: 'general', // Explicitly set default
+      is_public: true
+    };
+    
+    // 2. Sync with Backend
+    const response = await axios.post('/api/tasks', payload);
+    
+    // 3. Replace temp subtask with real one
+    const realSubtask = response.data;
+    const index = task.value.subtasks.findIndex(t => t.id === tempId);
+    if (index !== -1) {
+       // Graceful replacement
+       task.value.subtasks.splice(index, 1, realSubtask);
+    } else {
+       // Fallback if list changed wildly
+       task.value.subtasks.push(realSubtask);
+    }
+    
+    emit('updated');
+    
+    // Re-focus input manually if needed (Vue usually keeps it focused but good to be safe)
+    if (newSubtaskInputRef.value) newSubtaskInputRef.value.focus();
+
+  } catch (error) {
+    console.error('Failed to create subtask', error.response?.data || error);
+    // Revert optimistic update
+    const index = task.value.subtasks.findIndex(t => t.id === tempId);
+    if (index !== -1) task.value.subtasks.splice(index, 1);
+    
+    // Restore text
+    newSubtaskTitle.value = title;
+    
+    // Handle validation errors specifically
+    if (error.response?.status === 422) {
+        alert('Validation failed: ' + JSON.stringify(error.response.data.errors));
+    } else {
+        alert('Failed to save subtask. Please try again.');
+    }
+  } finally {
+      isCreatingSubtask.value = false;
+  }
+};
+
+const updateSubtaskTitle = async (sub) => {
+  if (sub.is_optimistic) return;
+  if (!sub.title.trim()) return;
+  try {
+    await axios.patch(`/api/tasks/${sub.id}`, { title: sub.title });
+  } catch (error) {
+    console.error('Failed to update subtask', error);
+  }
+};
+
+const deleteSubtaskId = async (id) => {
+  if (!confirm('Delete this subtask?')) return;
+  try {
+     await axios.delete(`/api/tasks/${id}`);
+     fetchTask();
+     emit('updated');
+  } catch (e) {
+     alert('Failed to delete subtask');
+  }
 };
 
 const formatDate = (dateString) => {
@@ -538,15 +870,6 @@ const formatAction = (log) => {
   return log.action.replace('_', ' ');
 };
 
-const priorityClass = (p) => {
-  switch (p) {
-    case 'urgent': return 'bg-rose-500 text-white';
-    case 'high': return 'bg-orange-500 text-white';
-    case 'medium': return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400';
-    default: return 'bg-slate-100 text-slate-500';
-  }
-};
-
 const getProperUrl = (content, download = false) => {
   if (!content) return '#';
   if (content.includes('/storage/deliveries/')) {
@@ -556,10 +879,29 @@ const getProperUrl = (content, download = false) => {
   return content;
 };
 
-onMounted(fetchTask);
+// Lifecycle handled above
 </script>
 
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
 .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+/* Scale In Animation */
+.scale-in-enter-active, .scale-in-leave-active {
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.scale-in-enter-from, .scale-in-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(-10px);
+}
+
+.animate-pulse-success {
+  animation: pulse-success 0.4s ease-out;
+}
+
+@keyframes pulse-success {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
 </style>

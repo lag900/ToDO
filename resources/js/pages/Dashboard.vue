@@ -132,7 +132,10 @@
               <div class="flex items-center justify-between px-1">
                 <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Context</p>
               </div>
+              <label for="filter-workspace" class="sr-only">Filter by Workspace</label>
               <select 
+                id="filter-workspace"
+                name="filter_workspace"
                 v-model="filters.workspaceId" 
                 class="w-full h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-6 text-sm font-bold shadow-sm outline-none transition-all"
               >
@@ -196,12 +199,24 @@
                 
                 <div v-if="filters.timeRange === 'custom'" class="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <div class="space-y-1">
-                    <p class="text-[8px] font-black uppercase text-slate-400 px-1">From</p>
-                    <input type="date" v-model="filters.customStart" class="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold shadow-sm">
+                    <label for="filter-date-from" class="text-[8px] font-black uppercase text-slate-400 px-1">From</label>
+                    <input 
+                      id="filter-date-from"
+                      name="filter_date_from"
+                      type="date" 
+                      v-model="filters.customStart" 
+                      class="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold shadow-sm"
+                    >
                   </div>
                   <div class="space-y-1">
-                    <p class="text-[8px] font-black uppercase text-slate-400 px-1">To</p>
-                    <input type="date" v-model="filters.customEnd" class="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold shadow-sm">
+                    <label for="filter-date-to" class="text-[8px] font-black uppercase text-slate-400 px-1">To</label>
+                    <input 
+                      id="filter-date-to"
+                      name="filter_date_to"
+                      type="date" 
+                      v-model="filters.customEnd" 
+                      class="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2 text-[10px] font-bold shadow-sm"
+                    >
                   </div>
                 </div>
               </div>
@@ -276,13 +291,17 @@
             <div 
                  :draggable="!isMobile || (isLongPress && activeDragTaskId === task.id)"
                  @dragstart="onDragStart($event, task)"
-                 @dragend="activeDragTaskId = null"
+                 @dragend="onDragEnd($event)"
                  @touchstart="handleTaskTouchStart($event, task)"
                  @touchend="handleTaskTouchEnd($event, task)"
-                 @touchmove="handleTaskTouchMove"
-                 @click="selectedTaskId = task.id"
-                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden transition-pop active-tap"
-                 :class="{'ring-4 ring-indigo-500/20 scale-105 z-20': isLongPress && activeDragTaskId === task.id}"
+                 @touchmove="handleTaskTouchMove($event)"
+                 @click="handleTaskClick(task)"
+                 @dblclick="handleTaskDblClick(task)"
+                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden transition-pop active-tap select-none"
+                 :class="{
+                    'ring-4 ring-indigo-500/20 scale-105 z-20': isLongPress && activeDragTaskId === task.id,
+                    'ring-2 ring-indigo-500 border-indigo-500': highlightedTaskId === task.id && !isMobile
+                 }"
             >
             
               <div :class="['absolute left-0 top-0 bottom-0 w-1', column.dotClass]"></div>
@@ -416,9 +435,9 @@
               
               <div class="flex items-center justify-between mt-6 pt-4 border-t border-slate-50 dark:border-slate-700/50">
                 <div class="flex items-center gap-3">
-                   <div v-if="task.subtasks?.length" class="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-slate-800/80 rounded-lg group/sub transition-all" :title="subtaskTooltip(task)">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" :class="allSubtasksDone(task) ? 'text-emerald-500' : 'text-slate-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 2v20"/><path d="m17 7-5-5-5 5"/><path d="m17 17-5 5-5-5"/></svg>
-                      <span class="text-[9px] font-black uppercase tracking-widest" :class="allSubtasksDone(task) ? 'text-emerald-500' : 'text-slate-400'">{{ task.subtasks.filter(s => s.status === 'done').length }}/{{ task.subtasks.length }}</span>
+                   <div v-if="task.subtasks?.length" class="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-slate-800/80 rounded-md border border-slate-100 dark:border-slate-700/50 group/sub transition-all" :title="subtaskTooltip(task)">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" :class="allSubtasksDone(task) ? 'text-emerald-500' : 'text-slate-400'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>
+                      <span class="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5" :class="allSubtasksDone(task) ? 'text-emerald-500' : 'text-slate-400'">{{ task.subtasks.filter(s => s.status === 'done').length }}/{{ task.subtasks.length }}</span>
                    </div>
 
                    <div v-if="task.deadline" class="flex items-center gap-1.5 text-[12px] font-black text-slate-400 uppercase tracking-widest">
@@ -449,11 +468,19 @@
             <table class="w-full text-left">
                <thead>
                  <tr class="text-[12px] font-heading font-black uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800">
-                   <th class="pb-6 px-4">Task Name</th>
-                   <th class="pb-6 px-4">Status</th>
-                   <th class="pb-6 px-4">Priority</th>
+                   <th class="pb-6 px-4 cursor-pointer hover:text-indigo-600 transition-colors select-none" @click="sort('title')">
+                      Task Name <span v-if="sortField === 'title'" class="text-indigo-600 ml-1">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                   </th>
+                   <th class="pb-6 px-4 cursor-pointer hover:text-indigo-600 transition-colors select-none" @click="sort('status')">
+                      Status <span v-if="sortField === 'status'" class="text-indigo-600 ml-1">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                   </th>
+                   <th class="pb-6 px-4 cursor-pointer hover:text-indigo-600 transition-colors select-none" @click="sort('priority')">
+                      Priority <span v-if="sortField === 'priority'" class="text-indigo-600 ml-1">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                   </th>
                    <th class="pb-6 px-4">People</th>
-                   <th class="pb-6 px-4">Due Date</th>
+                   <th class="pb-6 px-4 cursor-pointer hover:text-indigo-600 transition-colors select-none" @click="sort('due_date')">
+                      Due Date <span v-if="sortField === 'due_date'" class="text-indigo-600 ml-1">{{ sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                   </th>
                    <th class="pb-6 px-4 text-right">Actions</th>
                  </tr>
                </thead>
@@ -647,7 +674,14 @@
 
           <div>
             <label for="task-title" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Task Title</label>
-            <input id="task-title" v-model="newTask.title" type="text" placeholder="What needs to be done?" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base">
+            <input 
+              id="task-title" 
+              name="task_title"
+              v-model="newTask.title" 
+              type="text" 
+              placeholder="What needs to be done?" 
+              class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base"
+            >
           </div>
 
           <!-- Dates Row -->
@@ -658,7 +692,13 @@
              </div>
              <div>
                 <label for="task-start-time" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Start Time</label>
-                <input id="task-start-time" v-model="newTask.start_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+                <input 
+                  id="task-start-time" 
+                  name="start_time"
+                  v-model="newTask.start_time" 
+                  type="time" 
+                  class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200"
+                >
              </div>
           </div>
 
@@ -669,19 +709,37 @@
              </div>
              <div>
                 <label for="task-due-time" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Due Time</label>
-                <input id="task-due-time" v-model="newTask.due_time" type="time" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200">
+                <input 
+                  id="task-due-time" 
+                  name="due_time"
+                  v-model="newTask.due_time" 
+                  type="time" 
+                  class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-slate-200"
+                >
              </div>
           </div>
 
           <div>
             <label for="task-description" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Description</label>
-            <textarea id="task-description" v-model="newTask.description" placeholder="Add some context..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm" rows="3"></textarea>
+            <textarea 
+              id="task-description" 
+              name="task_description"
+              v-model="newTask.description" 
+              placeholder="Add some context..." 
+              class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm" 
+              rows="3"
+            ></textarea>
           </div>
 
           <!-- Assignee Selector -->
           <div v-if="currentWorkspace && currentWorkspace.members">
             <label for="task-assignee" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Assign to</label>
-            <select id="task-assignee" v-model="newTask.assigned_to" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-white">
+            <select 
+              id="task-assignee" 
+              name="assigned_to"
+              v-model="newTask.assigned_to" 
+              class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 outline-none focus:ring-4 focus:ring-indigo-500/20 text-sm font-bold text-slate-600 dark:text-white"
+            >
               <option :value="null">Unassigned</option>
               <option v-for="member in currentWorkspace.members" :key="member.id" :value="member.id">
                 {{ member.display_name }}
@@ -744,8 +802,15 @@
         
         <div class="flex-1 overflow-y-auto p-5 sm:p-10 space-y-6">
           <div>
-            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Context Name</label>
-            <input v-model="newWorkspace.name" type="text" placeholder="e.g. My Side Hustle" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base">
+            <label for="workspace-name" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Context Name</label>
+            <input 
+              id="workspace-name"
+              name="workspace_name"
+              v-model="newWorkspace.name" 
+              type="text" 
+              placeholder="e.g. My Side Hustle" 
+              class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm sm:text-base"
+            >
           </div>
 
           <div>
@@ -766,8 +831,15 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Purpose</label>
-            <input v-model="newWorkspace.intent" type="text" placeholder="Briefly describe what this is for..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm">
+            <label for="workspace-purpose" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Purpose</label>
+            <input 
+              id="workspace-purpose"
+              name="workspace_purpose"
+              v-model="newWorkspace.intent" 
+              type="text" 
+              placeholder="Briefly describe what this is for..." 
+              class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3.5 sm:py-4 outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium text-sm"
+            >
           </div>
         </div>
 
@@ -855,10 +927,13 @@
                              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Context</p>
                              <span v-if="!workspaceStore.globalMode" class="text-[8px] font-black uppercase text-indigo-500 bg-indigo-50 px-2 py-1 rounded">Active Workspace Only</span>
                            </div>
+                           <label for="mobile-filter-workspace" class="sr-only">Filter by Workspace (Mobile)</label>
                            <select 
-                            v-model="filters.workspaceId" 
-                            :disabled="!workspaceStore.globalMode"
-                            class="w-full h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-6 text-sm font-bold shadow-sm outline-none disabled:opacity-50"
+                             id="mobile-filter-workspace"
+                             name="mobile_filter_workspace"
+                             v-model="filters.workspaceId" 
+                             :disabled="!workspaceStore.globalMode"
+                             class="w-full h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-6 text-sm font-bold shadow-sm outline-none disabled:opacity-50"
                            >
                               <option :value="null">All Contexts</option>
                               <option v-for="ws in workspaceStore.workspaces" :key="ws.id" :value="ws.id">{{ ws.name }}</option>
@@ -907,8 +982,26 @@
                               </button>
                               
                               <div v-if="filters.timeRange === 'custom'" class="grid grid-cols-2 gap-4 animate-in fade-in duration-300">
-                                 <input type="date" v-model="filters.customStart" class="h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-4 text-xs font-bold shadow-inner">
-                                 <input type="date" v-model="filters.customEnd" class="h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-4 text-xs font-bold shadow-inner">
+                                 <div>
+                                   <label for="mobile-filter-date-from" class="sr-only">From Date (Mobile)</label>
+                                   <input 
+                                     id="mobile-filter-date-from"
+                                     name="mobile_filter_date_from"
+                                     type="date" 
+                                     v-model="filters.customStart" 
+                                     class="h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-4 text-xs font-bold shadow-inner"
+                                   >
+                                 </div>
+                                 <div>
+                                   <label for="mobile-filter-date-to" class="sr-only">To Date (Mobile)</label>
+                                   <input 
+                                     id="mobile-filter-date-to"
+                                     name="mobile_filter_date_to"
+                                     type="date" 
+                                     v-model="filters.customEnd" 
+                                     class="h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-4 text-xs font-bold shadow-inner"
+                                   >
+                                 </div>
                               </div>
                            </div>
                         </div>
@@ -941,18 +1034,19 @@
 
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
+import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } from 'vue';
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { useWorkspaceStore } from '../stores/workspace';
 import { storeToRefs } from 'pinia';
-import TaskDetails from '../components/TaskDetails.vue';
 import CalendarView from '../components/CalendarView.vue';
 import ContextSwitcher from '../components/ContextSwitcher.vue';
 import ShareModal from '../components/ShareModal.vue';
 import CustomDatePicker from '../components/CustomDatePicker.vue';
 
-import TaskDeliveryModal from '../components/TaskDeliveryModal.vue';
+// Async Components for Performance
+const TaskDetails = defineAsyncComponent(() => import('../components/TaskDetails.vue'));
+const TaskDeliveryModal = defineAsyncComponent(() => import('../components/TaskDeliveryModal.vue'));
 
 const auth = useAuthStore();
 const workspaceStore = useWorkspaceStore();
@@ -1001,6 +1095,18 @@ const taskTouchStartX = ref(0);
 const longPressTimer = ref(null);
 const isLongPress = ref(false);
 
+const sortField = ref('priority');
+const sortDirection = ref('desc');
+
+const sort = (field) => {
+  if (sortField.value === field) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortField.value = field;
+    sortDirection.value = 'desc';
+  }
+};
+
 
 const checkMobile = () => {
   const width = window.innerWidth;
@@ -1027,27 +1133,83 @@ const handleBoardScroll = (e) => {
 
 const activeDragTaskId = ref(null);
 
+// Touch Handling State
+const touchStartPos = ref({ x: 0, y: 0 });
+const hasMoved = ref(false);
+const highlightedTaskId = ref(null);
+const lastTapTime = ref(0);
+const lastTapTaskId = ref(null);
+
+const handleTaskClick = (task) => {
+  if (isMobile.value) return; 
+  // Desktop: Single click highlights
+  highlightedTaskId.value = task.id;
+};
+
+const handleTaskDblClick = (task) => {
+  if (isMobile.value) return;
+  // Desktop: Double click opens
+  selectedTaskId.value = task.id;
+  highlightedTaskId.value = null; // Clear highlight on open
+};
+
 const handleTaskTouchStart = (e, task) => {
   if (!isMobile.value) return;
   isLongPress.value = false;
   activeDragTaskId.value = task.id;
+  hasMoved.value = false;
+  
+  // Track start position
+  if (e.touches && e.touches[0]) {
+      touchStartPos.value = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }
 
   longPressTimer.value = setTimeout(() => {
-    isLongPress.value = true;
-    if (navigator.vibrate) navigator.vibrate([10, 30, 10]); 
+    // Only trigger long press if we haven't moved
+    if (!hasMoved.value) {
+        isLongPress.value = true;
+        if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+        // Optional: Long press could also open/select if desired, currently it initiates drag
+    }
   }, 600);
+};
+
+const handleTaskTouchMove = (e) => {
+    clearTimeout(longPressTimer.value);
+    
+    // Check if moved significantly to consider it a drag
+    if (e.touches && e.touches[0]) {
+        const moveX = Math.abs(e.touches[0].clientX - touchStartPos.value.x);
+        const moveY = Math.abs(e.touches[0].clientY - touchStartPos.value.y);
+        if (moveX > 10 || moveY > 10) {
+            hasMoved.value = true;
+        }
+    }
 };
 
 const handleTaskTouchEnd = (e, task) => {
   clearTimeout(longPressTimer.value);
-  if (!isLongPress.value && activeDragTaskId.value === task.id) {
-    // It was a short tap
-    selectedTaskId.value = task.id;
+  
+  // Logic: 
+  // 1. If long press (drag mode), do nothing (handled by drag events).
+  // 2. If moved (scroll/drag), do nothing.
+  // 3. Double Tap Detection
+  if (!isLongPress.value && !hasMoved.value && activeDragTaskId.value === task.id) {
+    const currentTime = Date.now();
+    const timeDiff = currentTime - lastTapTime.value;
+    
+    if (timeDiff < 300 && lastTapTaskId.value === task.id) {
+        // Double Tap -> OPEN
+        selectedTaskId.value = task.id;
+        highlightedTaskId.value = null;
+        lastTapTime.value = 0; // Reset
+    } else {
+        // Single Tap -> Select/Highlight
+        highlightedTaskId.value = task.id;
+        lastTapTime.value = currentTime;
+        lastTapTaskId.value = task.id;
+    }
   }
-};
-
-const handleTaskTouchMove = () => {
-    clearTimeout(longPressTimer.value);
 };
 
 const updateTaskStatus = async (task, newStatus) => {
@@ -1373,8 +1535,22 @@ const filteredTasks = computed(() => {
 
     return true;
   }).sort((a, b) => {
-      const priorityScore = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
-      return (priorityScore[b.priority] || 0) - (priorityScore[a.priority] || 0);
+      let result = 0;
+      
+      if (sortField.value === 'priority') {
+           const priorityScore = { 'urgent': 4, 'high': 3, 'medium': 2, 'low': 1 };
+           result = (priorityScore[a.priority] || 0) - (priorityScore[b.priority] || 0);
+      } else if (sortField.value === 'due_date') {
+           const dateA = a.deadline ? new Date(a.deadline).getTime() : 0;
+           const dateB = b.deadline ? new Date(b.deadline).getTime() : 0;
+           result = dateA - dateB;
+      } else if (sortField.value === 'status') {
+           result = (a.status || '').localeCompare(b.status || '');
+      } else if (sortField.value === 'title') {
+           result = (a.title || '').localeCompare(b.title || '');
+      }
+      
+      return sortDirection.value === 'asc' ? result : -result;
   });
 });
 
@@ -1384,25 +1560,63 @@ const openModal = () => {
   showModal.value = true;
 };
 
+const updatingTaskIds = ref(new Set());
+const isPolling = ref(false);
+
 const fetchTasks = async (silent = false) => {
   const wsId = workspaceStore.globalMode ? 'all' : currentWorkspace.value?.id;
   if (!wsId && !workspaceStore.globalMode) return;
   
+  // Prevent Overlapping Polls
+  if (silent && isPolling.value) return; 
   if (!silent) loading.value = true;
+  
+  if (silent) isPolling.value = true;
+
   try {
     const response = await axios.get(`/api/tasks`, {
         params: { workspace_id: wsId }
     });
     
-    // Compare and update only if different to prevent UI flicker
-    const newData = Array.isArray(response.data) ? response.data : [];
-    if (JSON.stringify(tasks.value) !== JSON.stringify(newData)) {
-        tasks.value = newData;
+    // Smart Merge: Don't overwrite tasks currently being updated by the user
+    const serverTasks = Array.isArray(response.data) ? response.data : [];
+    
+    if (tasks.value.length === 0) {
+        tasks.value = serverTasks;
+    } else {
+        // Update existing tasks and add new ones while respecting local locks
+        const mergedTasks = serverTasks.map(serverTask => {
+            // If this task is currently being updated locally, keep local version
+            if (updatingTaskIds.value.has(serverTask.id)) {
+                const localTask = tasks.value.find(t => t.id === serverTask.id);
+                // Return server task but with local status/assignee to prevent jumping
+                return localTask ? { ...serverTask, status: localTask.status, assigned_to: localTask.assigned_to } : serverTask;
+            }
+            return serverTask;
+        });
+
+        // Check if anything actually changed to avoid Vue reactivity triggers if not needed
+        // Workflow Stability: If "Review" column is disabled, move "testing" tasks to "in_progress"
+        const settings = currentWorkspace.value?.settings || {};
+        if (settings.enable_review_step === false) {
+           mergedTasks.forEach(t => {
+              if (t.status === 'testing' && !updatingTaskIds.value.has(t.id)) {
+                 t.status = 'in_progress';
+                 // Optionally: Trigger a background patch to persist this
+                 axios.patch(`/api/tasks/${t.id}`, { status: 'in_progress' }).catch(console.error);
+              }
+           });
+        }
+        
+        if (JSON.stringify(tasks.value) !== JSON.stringify(mergedTasks)) {
+            tasks.value = mergedTasks;
+        }
     }
   } catch (error) {
     console.error('Error fetching tasks:', error);
   } finally {
     if (!silent) loading.value = false;
+    isPolling.value = false;
   }
 };
 
@@ -1540,7 +1754,18 @@ const onDragStart = (event, task) => {
   event.dataTransfer.dropEffect = 'move';
   event.dataTransfer.effectAllowed = 'move';
   event.dataTransfer.setData('taskId', task.id);
-  event.target.classList.add('dragging');
+  // Defer adding the class to avoid hiding the element immediately (browser needs it for snapshot)
+  setTimeout(() => {
+      event.target.classList.add('dragging');
+      event.target.style.opacity = '0.4';
+  }, 0);
+};
+
+const onDragEnd = (event) => {
+  activeDragTaskId.value = null;
+  draggingOverColumn.value = null;
+  event.target.classList.remove('dragging');
+  event.target.style.opacity = '1';
 };
 
 const onDrop = async (event, newStatus) => {
@@ -1551,8 +1776,15 @@ const onDrop = async (event, newStatus) => {
   const task = tasks.value.find(t => t.id == taskId);
   
   if (task) {
-    // If dropped in the same column, ignore (no-op)
-    if (task.status === newStatus) return;
+    // If dropped in the same column, ignore (no-op) and strictly reset UI
+    if (task.status === newStatus) {
+       draggingOverColumn.value = null;
+       // activeDragTaskId.value = null; // Don't reset this for potential multi-drag logic if you add it later
+       return;
+    }
+
+    // Lock task from polling updates
+    updatingTaskIds.value.add(task.id);
 
     let updateData = { status: newStatus };
 
@@ -1566,6 +1798,7 @@ const onDrop = async (event, newStatus) => {
     
     // Optimistic UI update
     task.status = newStatus;
+    if (updateData.assigned_to) task.assigned_to = updateData.assigned_to;
 
     try {
       await axios.patch(`/api/tasks/${taskId}`, updateData);
@@ -1576,8 +1809,16 @@ const onDrop = async (event, newStatus) => {
           showDeliveryModal.value = true;
       }
 
-      fetchTasks();
+      // Release lock after a slight delay to ensure server consistency
+      setTimeout(() => {
+          updatingTaskIds.value.delete(task.id);
+          // Only fetch if we're not polling to avoid race conditions
+          if (!isPolling.value) fetchTasks(true); 
+      }, 500);
+
     } catch (error) {
+      // Revert and release lock
+      updatingTaskIds.value.delete(task.id);
       task.status = oldStatus;
       task.assigned_to = oldAssignee;
       alert('Failed to sync. ' + (error.response?.data?.message || 'Server error'));

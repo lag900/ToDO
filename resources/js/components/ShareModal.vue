@@ -15,6 +15,7 @@
             <label for="invite-email" class="block text-[11px] font-black uppercase tracking-widest text-slate-400 mb-2 px-1">Email Address</label>
             <input 
               id="invite-email"
+              name="invite_email"
               v-model="form.email" 
               type="email" 
               placeholder="colleague@company.com" 

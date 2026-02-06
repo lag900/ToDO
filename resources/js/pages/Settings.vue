@@ -145,6 +145,7 @@
                   <label for="workspace-selector" class="block text-[10px] font-black uppercase tracking-widest text-slate-400">Select Workspace to Configure</label>
                   <select 
                     id="workspace-selector"
+                    name="workspace_id"
                     @change="loadWorkspaceSettings"
                     v-model="selectedWorkspaceId"
                     class="w-full h-14 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl px-6 text-sm font-bold shadow-sm outline-none transition-all"

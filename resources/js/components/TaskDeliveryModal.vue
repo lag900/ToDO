@@ -1,9 +1,9 @@
 <template>
-  <div v-if="show" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-4 z-[200]">
-    <div class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+  <div v-if="show" class="fixed inset-0 bg-slate-900/90 backdrop-blur-xl flex items-center justify-center p-4 z-[50000]">
+    <div class="bg-white dark:bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200 relative">
       
       <!-- Header -->
-      <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
+      <div class="p-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 rounded-t-[3rem]">
         <div class="flex items-center gap-4">
           <div class="w-12 h-12 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
@@ -19,13 +19,14 @@
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
+      <div class="flex-1 overflow-y-auto p-8 space-y-8 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 relative">
         
         <!-- Delivery Notes -->
         <div class="space-y-3">
           <label for="delivery-notes" class="block text-[12px] font-black uppercase tracking-widest text-slate-400 px-1">Delivery Notes / Summary</label>
           <textarea 
             id="delivery-notes"
+            name="delivery_notes"
             v-model="notes" 
             placeholder="Summarize what was done, any considerations, and next steps..."
             class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-3xl px-6 py-5 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all font-medium text-sm min-h-[120px]"
@@ -54,7 +55,7 @@
                uploadStatus === 'success' ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/5' : ''
              ]"
           >
-             <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" multiple>
+             <input type="file" id="delivery-file-upload" name="delivery_files" ref="fileInput" class="hidden" @change="handleFileUpload" multiple>
              
              <!-- Icon Container -->
              <div class="relative w-20 h-20 flex items-center justify-center">
@@ -96,7 +97,7 @@
 
           <!-- Selected Items List -->
           <div v-if="items.length > 0" class="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div v-for="(item, index) in items" :key="index" class="p-5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-3xl flex items-start gap-4 shadow-sm hover:shadow-md transition-all group">
+            <div v-for="(item, index) in items" :key="index" class="p-5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-3xl flex items-start gap-4 shadow-sm hover:shadow-md transition-all group relative z-10 hover:z-20">
                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm transition-transform duration-300 group-hover:scale-110', typeIcon(item.type).bg]">
                   <component :is="typeIcon(item.type).icon" class="w-6 h-6 text-white" />
                </div>
@@ -108,16 +109,22 @@
                     </button>
                  </div>
                  <div class="space-y-3">
-                    <div v-if="item.type === 'link'" class="relative">
+                    <div v-if="item.type === 'link'" class="relative z-30">
                       <LinkIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                       <input 
+                        :id="'delivery-link-' + index"
+                        :name="'delivery_link_' + index"
                         v-model="item.content" 
+                        type="url"
                         placeholder="Paste your URL here (e.g. Figma, Drive)"
                         class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl px-9 py-2.5 text-xs font-medium outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
                       >
                     </div>
                     <input 
+                      :id="'delivery-desc-' + index"
+                      :name="'delivery_description_' + index"
                       v-model="item.description" 
+                      type="text"
                       placeholder="Add a description for this item..."
                       class="w-full bg-slate-100/30 dark:bg-slate-900/50 border-none rounded-xl px-4 py-2.5 text-[10px] font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-emerald-500/10"
                     >
@@ -129,7 +136,7 @@
       </div>
 
       <!-- Footer -->
-      <div class="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex gap-4">
+      <div class="p-8 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex gap-4 rounded-b-[3rem]">
         <button @click="$emit('close')" class="flex-1 px-6 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-[1.5rem] font-bold hover:bg-slate-100 transition-all border border-slate-200 dark:border-slate-700">Cancel</button>
         <button 
           @click="submitDelivery" 
