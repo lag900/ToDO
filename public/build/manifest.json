@@ -52,7 +52,7 @@
     "name": "vendor-vue"
   },
   "resources/css/app.css": {
-    "file": "assets/app-C0VMkesc.css",
+    "file": "assets/app-DSaGhCvD.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -61,7 +61,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BsdXxQT6.js",
+    "file": "assets/app-BYfwUgIh.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -82,7 +82,7 @@
       "resources/js/pages/TermsOfService.vue"
     ],
     "css": [
-      "assets/app-D4tbZkWm.css"
+      "assets/app-BuRNmohA.css"
     ]
   },
   "resources/js/pages/AcceptInvite.vue": {
@@ -97,7 +97,7 @@
     ]
   },
   "resources/js/pages/Landing.vue": {
-    "file": "assets/Landing-CofIgmKx.js",
+    "file": "assets/Landing-BKnVaZf-.js",
     "name": "Landing",
     "src": "resources/js/pages/Landing.vue",
     "isDynamicEntry": true,
@@ -107,7 +107,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Landing-DMMQCq-1.css"
+      "assets/Landing-Du0Fvd2B.css"
     ]
   },
   "resources/js/pages/Login.vue": {
@@ -125,7 +125,7 @@
     ]
   },
   "resources/js/pages/PrivacyPolicy.vue": {
-    "file": "assets/PrivacyPolicy-BF3MczxS.js",
+    "file": "assets/PrivacyPolicy-Bixp9S0x.js",
     "name": "PrivacyPolicy",
     "src": "resources/js/pages/PrivacyPolicy.vue",
     "isDynamicEntry": true,
@@ -136,7 +136,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/PrivacyPolicy-DIpQahZJ.css"
+      "assets/PrivacyPolicy-CDAYS0Ki.css"
     ]
   },
   "resources/js/pages/Settings.vue": {

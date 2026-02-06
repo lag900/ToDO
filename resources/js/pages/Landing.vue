@@ -1,117 +1,133 @@
 <template>
   <div class="min-h-screen bg-slate-50 dark:bg-slate-950 font-outfit overflow-x-hidden">
+
     <!-- Navbar -->
     <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
       <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
         <router-link to="/" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:rotate-12 transition-transform">
+          <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
              <span class="text-white font-black text-xl">T</span>
           </div>
           <span class="text-xl font-black text-slate-800 dark:text-white tracking-tight">Todo Batucore</span>
         </router-link>
-        
-        <div class="flex items-center gap-4">
-          <router-link to="/login" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95">
-            Get Started
-          </router-link>
-        </div>
+
+        <router-link to="/login" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg">
+          Get Started
+        </router-link>
       </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero -->
     <main class="pt-32 pb-20 px-6">
       <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 items-center">
+
         <div>
-          <div class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100 dark:border-indigo-500/20 rounded-full text-indigo-600 dark:text-indigo-400 text-sm font-bold mb-6">
-            <span class="relative flex h-2 w-2">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
-            </span>
-            v1.0 is Live!
-          </div>
-          <h1 class="text-5xl lg:text-7xl font-black text-slate-900 dark:text-white mb-6 leading-tight tracking-tight">
-            The smartest way to <span class="text-indigo-600">organize</span> your work.
+          <h2 class="text-2xl font-bold text-indigo-600 mb-4">
+            Task management platform with Google Calendar sync
+          </h2>
+
+          <h1 class="text-5xl lg:text-7xl font-black text-slate-900 dark:text-white mb-6 leading-tight">
+            The smartest way to organize your work.
           </h1>
-          <p class="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-xl">
-            Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface.
+
+          <p class="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
+            Todo Batucore helps you manage personal tasks, team projects,
+            and deadlines in one beautiful interface.
           </p>
+
           <div class="flex flex-wrap gap-4">
-            <router-link to="/login" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 transition-all text-lg active:scale-95">
+            <router-link to="/login" class="px-8 py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl">
               Start Building Today
             </router-link>
-            <a href="#features" class="px-8 py-4 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-500 text-slate-700 dark:text-slate-200 rounded-2xl font-black transition-all text-lg">
-              Explore Features
-            </a>
           </div>
         </div>
 
         <div class="relative">
-          <div class="absolute inset-0 bg-indigo-500/20 blur-[120px] rounded-full -z-10"></div>
-          <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 p-4 shadow-2xl">
-            <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore Preview" class="rounded-[2rem] w-full h-auto opacity-20">
-            <div class="absolute inset-0 flex items-center justify-center">
-               <span class="text-6xl font-black text-indigo-600/20 -rotate-12">THINKER</span>
-            </div>
+          <div class="bg-white dark:bg-slate-900 rounded-[2rem] border p-4 shadow-2xl">
+            <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" class="rounded-[1.5rem] w-full opacity-20">
           </div>
         </div>
+
       </div>
     </main>
 
-    <!-- Features Section -->
-    <section id="features" class="py-24 bg-white dark:bg-slate-900/50">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center max-w-3xl mx-auto mb-20">
-          <h2 class="text-3xl lg:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">Built for modern workflows</h2>
-          <p class="text-lg text-slate-600 dark:text-slate-400">Everything you need to stay productive, whether you're working solo or with a growing team.</p>
-        </div>
+    <!-- ABOUT (مهم لجوجل) -->
+    <section class="py-16 bg-white dark:bg-slate-950 border-y">
+      <div class="max-w-4xl mx-auto px-6 text-center">
+        <h2 class="text-3xl font-black text-slate-900 dark:text-white mb-6">
+          About Todo Batucore
+        </h2>
 
-        <div class="grid md:grid-cols-3 gap-8">
-          <!-- Feature 1 -->
-          <!-- Removed Google Calendar Feature Block -->
-          <!-- Feature 2 -->
-          <div class="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all group">
-            <div class="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 transition-transform">
-              <ClipboardDocumentCheckIcon class="w-8 h-8 text-indigo-600" />
-            </div>
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Task Management</h3>
-            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Organize tasks into boards, lists, and projects with an intuitive drag-and-drop interface.</p>
-          </div>
-          <!-- Feature 3 -->
-          <div class="p-8 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-700 hover:border-indigo-500 transition-all group">
-            <div class="w-14 h-14 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center shadow-lg mb-6 group-hover:scale-110 transition-transform">
-              <UserGroupIcon class="w-8 h-8 text-indigo-600" />
-            </div>
-            <h3 class="text-xl font-bold text-slate-900 dark:text-white mb-4">Team Collaboration</h3>
-            <p class="text-slate-600 dark:text-slate-400 leading-relaxed">Invite team members to your workspace and collaborate on tasks in real-time.</p>
-          </div>
+        <p class="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+          Todo Batucore is a productivity and task management web application that helps users organize tasks,
+          manage deadlines, collaborate with teams, and synchronize schedules with Google Calendar.
+        </p>
+
+        <p class="text-lg text-slate-600 dark:text-slate-400 mt-4 leading-relaxed">
+          Users can securely sign in using Google OAuth and optionally connect their Google Calendar
+          to create, update, and delete task-related events automatically.
+        </p>
+
+        <p class="text-sm text-slate-500 mt-6">
+          This is the official homepage of Todo Batucore application.
+        </p>
+      </div>
+    </section>
+
+    <!-- GOOGLE DATA USAGE (مهم للموافقة) -->
+    <section class="py-20 bg-indigo-50 dark:bg-slate-900">
+      <div class="max-w-5xl mx-auto px-6 text-center">
+
+        <h2 class="text-3xl font-black mb-6 text-slate-900 dark:text-white">
+          Google Data Usage & Privacy
+        </h2>
+
+        <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 shadow-xl text-left space-y-4">
+
+          <p><strong>Authentication:</strong> We use Google OAuth only to sign you into your account securely.</p>
+
+          <p><strong>Calendar Access:</strong> If you enable Google Calendar sync, Todo Batucore creates and manages events only for your tasks.</p>
+
+          <p><strong>Data Storage:</strong> We store only the Google Event ID required for synchronization.</p>
+
+          <p><strong>No Data Selling:</strong> We never sell, share, or transfer Google user data to third parties.</p>
+
+          <p><strong>User Control:</strong> You can disconnect Google Calendar anytime from settings.</p>
+
         </div>
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="py-20 border-t border-slate-200 dark:border-slate-800">
+    <!-- FOOTER -->
+    <footer class="py-20 border-t bg-white dark:bg-slate-950">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
+
         <div class="flex items-center gap-3">
           <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
              <span class="text-white font-black text-sm">T</span>
           </div>
-          <span class="text-lg font-black text-slate-800 dark:text-white tracking-tight">Todo Batucore</span>
+          <span class="text-lg font-black text-slate-800 dark:text-white">Todo Batucore</span>
         </div>
-        
-        <div class="flex flex-wrap justify-center gap-8">
-          <router-link to="/privacy-policy" class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-widest">Privacy Policy</router-link>
-          <router-link to="/terms-of-service" class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-widest">Terms of Service</router-link>
-          <a href="mailto:abdozero2030@gmail.com" class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors uppercase tracking-widest">Contact</a>
+
+        <div class="flex gap-8">
+          <router-link to="/privacy-policy" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Privacy Policy</router-link>
+          <router-link to="/terms-of-service" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Terms</router-link>
+          <a href="mailto:abdozero2030@gmail.com" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Contact</a>
         </div>
-        
-        <p class="text-sm text-slate-500 font-medium">© 2026 Todo Batucore. All rights reserved.</p>
+
+        <p class="text-sm text-slate-500">© 2026 Todo Batucore</p>
       </div>
+
+      <p class="text-center text-xs text-slate-400 mt-6">
+        Todo Batucore is an independent productivity web application and is not affiliated with Google.
+      </p>
+
     </footer>
+
   </div>
 </template>
 
 <script setup>
-import { CalendarIcon, ClipboardDocumentCheckIcon, UserGroupIcon } from '@heroicons/vue/24/outline';
 </script>
 
 <style scoped>
