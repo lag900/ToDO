@@ -70,24 +70,17 @@ return new class extends Migration
     /**
      * Helper to check if an index exists
      */
-    private function indexExists(string $table, string $index): bool
+    private function indexExists(string $table, string $indexName): bool
     {
-        $conn = Schema::getConnection();
-        $dbName = $conn->getDatabaseName();
-        
-        // This works for MySQL/MariaDB
         try {
-            $results = DB::select("
-                SELECT COUNT(1) as has_index
-                FROM information_schema.statistics 
-                WHERE table_schema = ? 
-                AND table_name = ? 
-                AND index_name = ?
-            ", [$dbName, $table, $index]);
-
-            return $results[0]->has_index > 0;
+            $indexes = Schema::getIndexes($table);
+            foreach ($indexes as $index) {
+                if ($index['name'] === $indexName) {
+                    return true;
+                }
+            }
+            return false;
         } catch (\Exception $e) {
-            // Fallback for SQLite or other DBs if needed
             return false;
         }
     }
