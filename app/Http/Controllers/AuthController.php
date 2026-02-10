@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class AuthController extends Controller
 {
@@ -41,6 +42,20 @@ class AuthController extends Controller
         $expiresAt = isset($googleUser->expiresIn) ? now()->addSeconds($googleUser->expiresIn) : null;
 
         if ($user) {
+            try {
+                // Trigger decryption to check if data is valid
+                // If the tokens were stored before encryption was enabled, this will fail.
+                $checkToken = $user->google_token;
+                $checkRefresh = $user->google_refresh_token; 
+            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+                // If decryption fails, the tokens are likely from before encryption was enabled or corrupted.
+                // We should clear them directly in the database so the update can proceed cleanly.
+                User::where('id', $user->id)->update([
+                    'google_token' => null, 
+                    'google_refresh_token' => null
+                ]);
+                $user = $user->fresh();
+            }
             $updateData = [
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
