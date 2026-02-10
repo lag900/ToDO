@@ -38,11 +38,24 @@ class GoogleCalendarService
      */
     protected function authenticateForUser(User $user): bool
     {
-        if (empty($user->google_token)) {
+        try {
+            // Accessing google_token might trigger DecryptException if it's legacy/corrupted
+            $token = $user->google_token;
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            Log::warning("GCal: Legacy/Corrupted token detected for User {$user->id}. Resetting.");
+            $user->updateQuietly([
+                'google_token' => null,
+                'google_refresh_token' => null,
+                'google_calendar_scopes_granted' => false
+            ]);
             return false;
         }
 
-        $this->client->setAccessToken($user->google_token);
+        if (empty($token)) {
+            return false;
+        }
+
+        $this->client->setAccessToken($token);
 
         // Logic check: Is it expired?
         $isExpired = $this->client->isAccessTokenExpired();
