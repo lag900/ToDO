@@ -14,11 +14,11 @@ class AuthController extends Controller
     {
         return Socialite::driver('google')
             ->scopes([
-                'https://www.googleapis.com/auth/calendar',
-                'https://www.googleapis.com/auth/calendar.events',
+                // Only request allowed scopes: minimal calendar events + OpenID Connect
+                'openid',
                 'email',
                 'profile',
-                'openid'
+                'https://www.googleapis.com/auth/calendar.events'
             ])
             ->with([
                 'access_type' => 'offline', 

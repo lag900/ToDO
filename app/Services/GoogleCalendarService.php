@@ -15,17 +15,18 @@ class GoogleCalendarService
 {
     protected $client;
 
-    public function __construct()
+    public function __construct($accessToken)
     {
-        // Initialize Google Client with standard config
-        $this->client = new Client();
-        $this->client->setClientId(config('services.google.client_id'));
-        $this->client->setClientSecret(config('services.google.client_secret'));
-        $this->client->setRedirectUri(config('services.google.redirect'));
-        $this->client->addScope(Calendar::CALENDAR);
-        $this->client->addScope(Calendar::CALENDAR_EVENTS);
-        $this->client->setAccessType('offline');
-        $this->client->setPrompt('consent');
+        $client = new Client();
+        $client->setAccessToken($accessToken);
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect'));
+        // Only request the minimal scope required to create/manage events
+        // (https://www.googleapis.com/auth/calendar.events)
+        $client->addScope(Calendar::CALENDAR_EVENTS);
+        $this->client = $client;
+        $this->service = new Calendar($client);
     }
 
     /**
@@ -55,8 +56,11 @@ class GoogleCalendarService
                 try {
                     $newToken = $this->client->fetchAccessTokenWithRefreshToken($user->google_refresh_token);
                     
+                    // If Google returns an error object, log non-sensitive parts only
                     if (isset($newToken['error'])) {
-                        Log::error("GCal Service: Refresh error for User #{$user->id}: " . json_encode($newToken));
+                        $err = $newToken['error'] ?? 'unknown_error';
+                        $desc = $newToken['error_description'] ?? '';
+                        Log::error("GCal Service: Refresh error for User #{$user->id}: {$err} {$desc}");
                         // If error is 'invalid_grant', the refresh token is revoked
                         if (isset($newToken['error']) && $newToken['error'] === 'invalid_grant') {
                              $user->updateQuietly(['google_calendar_scopes_granted' => false]);

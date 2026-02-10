@@ -41,6 +41,14 @@ Route::get('/', function () {
 Route::view('/privacy-policy', 'public.privacy');
 Route::view('/terms-of-service', 'public.terms');
 
+// Public route for privacy policy (ensure accessible without auth)
+Route::get('/privacy-policy', function () {
+    // If using server-side Blade view:
+    // return view('privacy-policy');
+    // If SPA serving index, redirect to SPA route so Vue renders it:
+    return view('app'); // ...existing SPA entry view
+});
+
 // --- SPA MAIN ROUTE ---
 Route::get('/{any}', function () {
     return view('app');

@@ -66,6 +66,9 @@ class User extends Authenticatable
             'notification_settings' => 'array',
             'google_calendar_scopes_granted' => 'boolean',
             'google_token_expires_at' => 'datetime',
+            // Store Google tokens encrypted at rest
+            'google_token' => 'encrypted',
+            'google_refresh_token' => 'encrypted',
         ];
     }
 

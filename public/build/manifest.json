@@ -52,7 +52,7 @@
     "name": "vendor-vue"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DSaGhCvD.css",
+    "file": "assets/app-B9x9pcfQ.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -61,7 +61,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DyVCMwC9.js",
+    "file": "assets/app-CF8TDjs-.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -82,7 +82,7 @@
       "resources/js/pages/TermsOfService.vue"
     ],
     "css": [
-      "assets/app-BuRNmohA.css"
+      "assets/app-CoWguN1t.css"
     ]
   },
   "resources/js/pages/AcceptInvite.vue": {
@@ -97,7 +97,7 @@
     ]
   },
   "resources/js/pages/Landing.vue": {
-    "file": "assets/Landing-BKnVaZf-.js",
+    "file": "assets/Landing-CSBRwoxn.js",
     "name": "Landing",
     "src": "resources/js/pages/Landing.vue",
     "isDynamicEntry": true,
@@ -107,7 +107,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Landing-Du0Fvd2B.css"
+      "assets/Landing-CPDQ0Rw8.css"
     ]
   },
   "resources/js/pages/Login.vue": {
@@ -125,7 +125,7 @@
     ]
   },
   "resources/js/pages/PrivacyPolicy.vue": {
-    "file": "assets/PrivacyPolicy-ECOoapFM.js",
+    "file": "assets/PrivacyPolicy-DsiPUch8.js",
     "name": "PrivacyPolicy",
     "src": "resources/js/pages/PrivacyPolicy.vue",
     "isDynamicEntry": true,
@@ -136,7 +136,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/PrivacyPolicy-ozWTS72x.css"
+      "assets/PrivacyPolicy-D-7QvvDV.css"
     ]
   },
   "resources/js/pages/Settings.vue": {
@@ -169,7 +169,7 @@
     ]
   },
   "resources/js/pages/Welcome.vue": {
-    "file": "assets/Welcome-78OIgEu9.js",
+    "file": "assets/Welcome-DiXJqztt.js",
     "name": "Welcome",
     "src": "resources/js/pages/Welcome.vue",
     "isDynamicEntry": true,
@@ -179,7 +179,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Welcome-C7Rpfv-U.css"
+      "assets/Welcome-B1lYMfH1.css"
     ]
   },
   "resources/js/pages/WorkspaceSetup.vue": {

@@ -42,6 +42,10 @@
         </form>
       </div>
     </div>
+
+    <footer class="mt-6">
+      <a href="/privacy-policy" class="text-sm text-slate-500 hover:underline">Privacy Policy</a>
+    </footer>
   </div>
 </template>
 
