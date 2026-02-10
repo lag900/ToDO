@@ -61,7 +61,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BYfwUgIh.js",
+    "file": "assets/app-DyVCMwC9.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -125,7 +125,7 @@
     ]
   },
   "resources/js/pages/PrivacyPolicy.vue": {
-    "file": "assets/PrivacyPolicy-Bixp9S0x.js",
+    "file": "assets/PrivacyPolicy-ECOoapFM.js",
     "name": "PrivacyPolicy",
     "src": "resources/js/pages/PrivacyPolicy.vue",
     "isDynamicEntry": true,
@@ -136,7 +136,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/PrivacyPolicy-CDAYS0Ki.css"
+      "assets/PrivacyPolicy-ozWTS72x.css"
     ]
   },
   "resources/js/pages/Settings.vue": {
