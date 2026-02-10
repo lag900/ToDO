@@ -13,7 +13,10 @@ class AuthController extends Controller
 {
     public function redirectToGoogle()
     {
-        return Socialite::driver('google')
+        /** @var \Laravel\Socialite\Two\GoogleProvider $driver */
+        $driver = Socialite::driver('google');
+
+        return $driver
             ->scopes([
                 // Only request allowed scopes: minimal calendar events + OpenID Connect
                 'openid',
@@ -47,7 +50,7 @@ class AuthController extends Controller
                 // If the tokens were stored before encryption was enabled, this will fail.
                 $checkToken = $user->google_token;
                 $checkRefresh = $user->google_refresh_token; 
-            } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            } catch (DecryptException $e) {
                 // If decryption fails, the tokens are likely from before encryption was enabled or corrupted.
                 // We should clear them directly in the database so the update can proceed cleanly.
                 User::where('id', $user->id)->update([
