@@ -54,7 +54,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-D9ckrm1P.js",
+    "file": "assets/app-aju0A9yb.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -89,7 +89,7 @@
     ]
   },
   "resources/js/pages/Landing.vue": {
-    "file": "assets/Landing-Bg5wq8EB.js",
+    "file": "assets/Landing-CmHfVNDm.js",
     "name": "Landing",
     "src": "resources/js/pages/Landing.vue",
     "isDynamicEntry": true,
@@ -99,11 +99,11 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Landing-g4Jk0BEC.css"
+      "assets/Landing-Cu1yEk4i.css"
     ]
   },
   "resources/js/pages/Login.vue": {
-    "file": "assets/Login-DNON6JW0.js",
+    "file": "assets/Login-Dr4jPFjC.js",
     "name": "Login",
     "src": "resources/js/pages/Login.vue",
     "isDynamicEntry": true,
@@ -113,7 +113,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Login-CQ_zrPzo.css"
+      "assets/Login-DNCqCfGW.css"
     ]
   },
   "resources/js/pages/Settings.vue": {

@@ -33,9 +33,9 @@
         <div class="mt-8 pt-8 border-t border-slate-50 dark:border-slate-800 text-center space-y-3">
           <p class="text-xs text-slate-400 font-medium">By continuing, you agree to our Terms of Service</p>
           <div class="flex items-center justify-center gap-4">
-            <router-link to="/privacy-policy" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Privacy Policy</router-link>
+            <a href="/privacy-policy" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Privacy Policy</a>
             <div class="w-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
-            <router-link to="/terms-of-service" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Terms of Service</router-link>
+            <a href="/terms-of-service" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors uppercase tracking-widest">Terms of Service</a>
           </div>
         </div>
       </div>

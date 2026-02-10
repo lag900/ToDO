@@ -76,7 +76,7 @@
 
         <p>
           <a href="/privacy-policy" class="text-indigo-600 hover:underline">Privacy Policy</a> ·
-          <a href="/terms" class="text-indigo-600 hover:underline">Terms</a> ·
+          <a href="/terms-of-service" class="text-indigo-600 hover:underline">Terms</a> ·
           <a href="mailto:abdozero2030@gmail.com" class="text-indigo-600 hover:underline">abdozero2030@gmail.com</a>
         </p>
       </div>
@@ -110,8 +110,8 @@
         </div>
 
         <div class="flex gap-8">
-          <router-link to="/privacy-policy" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Privacy Policy</router-link>
-          <router-link to="/terms-of-service" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Terms</router-link>
+          <a href="/privacy-policy" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Privacy Policy</a>
+          <a href="/terms-of-service" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Terms</a>
           <a href="mailto:abdozero2030@gmail.com" class="text-sm font-bold text-slate-500 hover:text-indigo-600">Contact</a>
         </div>
 
