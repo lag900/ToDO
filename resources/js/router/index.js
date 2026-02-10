@@ -45,12 +45,7 @@ const routes = [
         component: () => import('../pages/AcceptInvite.vue'),
         meta: { requiresAuth: false }
     },
-    {
-        path: '/privacy-policy',
-        name: 'privacy-policy',
-        component: () => import('../pages/PrivacyPolicy.vue'),
-        meta: { requiresAuth: false }
-    },
+  
     {
         path: '/terms-of-service',
         name: 'terms-of-service',

@@ -54,7 +54,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CSvlVh2q.js",
+    "file": "assets/app-D9ckrm1P.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -71,7 +71,6 @@
       "resources/js/pages/WorkspaceSetup.vue",
       "resources/js/pages/Settings.vue",
       "resources/js/pages/AcceptInvite.vue",
-      "resources/js/pages/PrivacyPolicy.vue",
       "resources/js/pages/TermsOfService.vue"
     ],
     "css": [
@@ -115,20 +114,6 @@
     ],
     "css": [
       "assets/Login-CQ_zrPzo.css"
-    ]
-  },
-  "resources/js/pages/PrivacyPolicy.vue": {
-    "file": "assets/PrivacyPolicy-4-orNKPP.js",
-    "name": "PrivacyPolicy",
-    "src": "resources/js/pages/PrivacyPolicy.vue",
-    "isDynamicEntry": true,
-    "imports": [
-      "_vendor-vue-C0IDuzMx.js",
-      "_pages-dashboard-Hu4J_6cY.js",
-      "_vendor-utils-bzb-uA31.js"
-    ],
-    "css": [
-      "assets/PrivacyPolicy-DMaRk30k.css"
     ]
   },
   "resources/js/pages/Settings.vue": {
