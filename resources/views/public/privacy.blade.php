@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Privacy Policy - Todo Batucore</title>
+    <link rel="canonical" href="https://todo.batucore.website/privacy-policy">
     <style>
         :root {
             --primary: #4f46e5;
