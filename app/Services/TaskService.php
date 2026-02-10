@@ -11,8 +11,11 @@ use Illuminate\Support\Facades\DB;
 
 class TaskService
 {
+    protected $googleCalendarService;
+
     public function __construct()
     {
+        $this->googleCalendarService = new \App\Services\GoogleCalendarService();
     }
 
     /**
@@ -157,17 +160,12 @@ class TaskService
                 ]);
             }
 
-            // Google Calendar Sync Removed
-            /*
             // Sync with Google Calendar
-            $calendarStatus = null;
-            if ($task->start_date) {
-                $calendarStatus = $this->googleCalendarService->syncTaskEvent($task);
-                if (in_array($calendarStatus, ['created', 'updated', 'recreated', 'deleted'])) {
-                    $this->logActivity($task, 'google_calendar_sync', ['status' => $calendarStatus]);
-                }
+            if ($task->start_date && $task->deadline) {
+                // handleSync handles authentication/sync for all relevant workspace members
+                $this->googleCalendarService->handleSync($task, 'created');
+                $this->logActivity($task, 'google_calendar_sync', ['status' => 'synced']);
             }
-            */
 
             // Notifications now handled by TaskObserver for SSoT consistency
 
@@ -306,11 +304,8 @@ class TaskService
 
             // Notifications now handled by TaskObserver for SSoT consistency
 
-            // Google Calendar Sync Removed
-            /*
             // Sync with Google Calendar if relevant fields changed
-            $calendarStatus = null;
-            $calendarFields = ['start_date', 'deadline', 'title', 'description', 'status'];
+            $calendarFields = ['start_date', 'deadline', 'title', 'description', 'status', 'assigned_to', 'working_by_id'];
             $shouldSync = false;
             foreach ($calendarFields as $f) {
                 if (array_key_exists($f, $data)) {
@@ -318,16 +313,10 @@ class TaskService
                     break;
                 }
             }
-
+            // Only sync if we have dates (or if dates are being removed, handleSync handles that too)
             if ($shouldSync) {
-                $calendarStatus = $this->googleCalendarService->syncTaskEvent($task);
-                if (in_array($calendarStatus, ['created', 'updated', 'recreated', 'deleted'])) {
-                    $this->logActivity($task, 'google_calendar_sync', ['status' => $calendarStatus]);
-                }
+                $this->googleCalendarService->handleSync($task, 'updated');
             }
-            
-            $task->calendar_sync_status = $calendarStatus;
-            */
 
             return $task;
         });
@@ -384,8 +373,8 @@ class TaskService
 
             $this->logActivity($task, 'deleted', ['title' => $task->title]);
 
-            // Remove from Google Calendar - Disabled
-            // $this->googleCalendarService->deleteEvent($task);
+            // Remove from Google Calendar
+            $this->googleCalendarService->handleSync($task, 'deleted');
 
             $task->checklists()->delete();
             $task->subtasks()->update(['parent_id' => null]);

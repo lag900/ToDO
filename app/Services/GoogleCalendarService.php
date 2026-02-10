@@ -14,11 +14,14 @@ use Carbon\Carbon;
 class GoogleCalendarService
 {
     protected $client;
+    protected $service;
 
-    public function __construct($accessToken)
+    public function __construct($accessToken = null)
     {
         $client = new Client();
-        $client->setAccessToken($accessToken);
+        if ($accessToken) {
+            $client->setAccessToken($accessToken);
+        }
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect'));
