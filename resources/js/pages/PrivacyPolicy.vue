@@ -48,6 +48,34 @@
                 the app to ensure they are available to you whenever you log in.</li>
             </ul>
           </section>
+<section>
+  <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">
+    Google User Data Retention and Deletion
+  </h2>
+
+  <p>
+    Todo Batucore retains Google user data only for as long as necessary to provide core application functionality.
+  </p>
+
+  <ul class="list-disc pl-5 space-y-2">
+    <li>User basic Google profile data (name and email) is stored while the account is active.</li>
+    <li>Google Calendar data is not permanently stored on our servers. Only the Google Calendar event ID required for synchronization is saved.</li>
+  </ul>
+
+  <p class="mt-4">
+    When a user disconnects their Google account or deletes their Todo Batucore account:
+  </p>
+
+  <ul class="list-disc pl-5 space-y-2">
+    <li>All Google user data is permanently deleted from our servers within 30 days.</li>
+    <li>Users may request immediate deletion by contacting us at: abdozero2030@gmail.com</li>
+  </ul>
+
+  <p class="mt-4">
+    Users can also revoke access at any time from their Google Account permissions page:
+    https://myaccount.google.com/permissions
+  </p>
+</section>
 
           <section>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white mb-4">How We Use Information</h2>
