@@ -44,13 +44,21 @@ class User extends Authenticatable
 
     public function getHasGoogleIntegrationAttribute()
     {
-        return !empty($this->google_token);
+        try {
+            return !empty($this->google_token);
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return false;
+        }
     }
 
     public function getGoogleCalendarNeedsReconnectAttribute()
     {
-        // Needs reconnect if integrated but scopes NOT granted OR explicitly has scope error
-        return $this->has_google_integration && (!$this->google_calendar_scopes_granted || !empty($this->google_calendar_error));
+        try {
+            // Needs reconnect if integrated but scopes NOT granted OR explicitly has scope error
+            return $this->has_google_integration && (!$this->google_calendar_scopes_granted || !empty($this->google_calendar_error));
+        } catch (\Illuminate\Contracts\Encryption\DecryptException $e) {
+            return false;
+        }
     }
 
     /**
