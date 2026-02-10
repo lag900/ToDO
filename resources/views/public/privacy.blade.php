@@ -80,65 +80,74 @@
 
         <div class="card">
             <h1>Privacy Policy</h1>
-            <p class="updated">Last Updated: February 10, 2026</p>
+            <p class="updated">Last Updated: February 4, 2026</p>
 
             <section>
                 <h2>Introduction</h2>
-                <p>Welcome to <strong>Todo Batucore</strong> (https://todo.batucore.website). Todo Batucore is an independent productivity web application that helps users manage tasks, collaborate with teams, and optionally synchronize task-related events with Google Calendar. This Privacy Policy explains what data we collect, how we use it, how long we keep it, and how you can request deletion or revoke access.</p>
+                <p>Welcome to <strong>Todo Batucore</strong> (https://todo.batucore.website). We value your privacy and are committed to being transparent about how we handle your information. This Privacy Policy explains what data we collect, why we collect it, and how we protect it.</p>
+                <p>Todo Batucore is an independent productivity web application that allows users to manage tasks and optionally integrate with Google Calendar to synchronize task-related events.</p>
             </section>
 
             <section>
-                <h2>Google OAuth data usage</h2>
-                <p>When you sign in with Google OAuth we request basic profile information to create and manage your account:</p>
+                <h2>Information We Collect</h2>
+                <p>To provide our service, we collect the following information:</p>
                 <ul>
-                    <li><strong>Identity:</strong> Your Google name, email address, and profile picture (used to identify and personalize your account).</li>
-                    <li><strong>Authentication tokens:</strong> Access and refresh tokens necessary to perform calendar event operations on your behalf when you enable Google Calendar integration.</li>
+                    <li><strong>Google Account Information:</strong> When you sign in using Google OAuth, we access your name, email address, and profile picture.</li>
+                    <li><strong>Google Calendar Data:</strong> If you choose to integrate your calendar, we access your calendar list and events to sync tasks. We only store the Event ID to maintain synchronization.</li>
+                    <li><strong>Application Data:</strong> We store the tasks, notes, and todo lists that you create within the app to ensure they are available to you whenever you log in.</li>
                 </ul>
             </section>
 
             <section>
-                <h2>Google Calendar data usage</h2>
-                <p>If you enable Google Calendar integration we use the Google Calendar Events scope to create, update, and delete events that correspond to tasks you create or assign. We only use this access to provide synchronization features and do not read or export calendar content beyond what is necessary to manage those events.</p>
+                <h2>How We Use Information</h2>
+                <p>We use your data strictly for the following purposes:</p>
+                <ul>
+                    <li><strong>Authentication:</strong> To identify you and allow you to securely log into your account.</li>
+                    <li><strong>Functionality:</strong> To save and display your tasks.</li>
+                    <li><strong>Calendar Integration:</strong> To create and update calendar events corresponding to your tasks. We do not use this data for any other purpose.</li>
+                    <li><strong>Communication:</strong> We may use your email to send important service-related updates (not for marketing).</li>
+                </ul>
+                <p>We do not use your data for advertising purposes or to build profiles for tracking.</p>
             </section>
 
             <section>
-                <h2>Data retention policy</h2>
-                <p>We retain the minimum data necessary to operate the service. Specifically:</p>
+                <h2>Data Sharing</h2>
+                <p>We believe your data belongs to you.</p>
                 <ul>
-                    <li><strong>Account profile (name, email, avatar):</strong> retained for as long as your account exists.</li>
-                    <li><strong>Task data:</strong> retained until you delete it or your account.</li>
-                    <li><strong>Google Calendar event identifiers:</strong> we store only the Google event ID required for synchronization.</li>
+                    <li><strong>No Selling:</strong> We do not sell, trade, or rent your personal information to third parties.</li>
+                    <li><strong>No Sharing:</strong> We do not share your data with any third-party services, except for Google (to facilitate login) and our essential hosting infrastructure.</li>
                 </ul>
             </section>
 
             <section>
-                <h2>Google User Data Retention and Deletion</h2>
-                <p>We limit what Google user data we store and how long we keep it:</p>
+                <h2>Data Security</h2>
+                <p>We use industry-standard security measures to protect your information from unauthorized access, loss, or alteration. However, please remember that no method of transmission over the internet is 100% secure.</p>
+            </section>
+
+            <section>
+                <h2>Google API Services User Data Policy</h2>
+                <p>Todo Batucore's use of information received from Google APIs adheres to the Google API Services User Data Policy, including the Limited Use requirements.</p>
                 <ul>
-                    <li>Only the Google Calendar <strong>event_id</strong> is stored on our servers to map tasks to calendar events.</li>
-                    <li>If you disconnect your Google account or delete your Todo Batucore account, all Google-related data (including stored event IDs, tokens, and any cached Google metadata) will be deleted from our servers within 30 days.</li>
-                    <li>You may request immediate deletion at any time by contacting us at the email below; we will process such requests promptly.</li>
+                    <li>We only use Google user data to provide core application functionality.</li>
+                    <li>We do not transfer, sell, or share Google user data with third parties.</li>
+                    <li>We do not use Google data for advertising or profiling.</li>
+                    <li>We do not allow humans to read user data unless required for security or with user consent.</li>
+                    <li>Users can revoke access to their Google account at any time from their Google Account permissions page.</li>
                 </ul>
             </section>
 
             <section>
-                <h2>Data deletion policy</h2>
-                <p>When you request deletion of your account or we remove your data as part of our retention rules, we permanently delete the data from our primary databases and any backups within our control within 30 days. Some residual copies may remain in logs or backups for a short period for disaster recovery, and will be purged according to our backup retention schedule.</p>
+                <h2>User Rights</h2>
+                <p>You have the right to:</p>
+                <ul>
+                    <li>Access the information we hold about you.</li>
+                    <li>Request the deletion of your account and all associated data at any time through the application settings or by contacting us.</li>
+                </ul>
             </section>
 
             <section>
-                <h2>No selling/sharing statement</h2>
-                <p>Todo Batucore does not sell, rent, or trade your personal information. We do not share Google data with third parties except as required to provide the service (for example, communicating with Google APIs) and for essential infrastructure providers (hosting).</p>
-            </section>
-
-            <section>
-                <h2>User revoke access info</h2>
-                <p>You may revoke Todo Batucore's access to your Google account at any time from your Google Account permissions page: <a href="https://myaccount.google.com/permissions">https://myaccount.google.com/permissions</a>. After revoking access, synchronization features will stop and any stored Google data will be deleted within 30 days.</p>
-            </section>
-
-            <section>
-                <h2>Contact</h2>
-                <p>If you have questions or would like to request deletion or export of your data, please contact us at: <a href="mailto:abdozero2030@gmail.com">abdozero2030@gmail.com</a></p>
+                <h2>Contact Information</h2>
+                <p>If you have any questions about this Privacy Policy, please contact us at: <a href="mailto:abdozero2030@gmail.com">abdozero2030@gmail.com</a></p>
             </section>
         </div>
     </div>

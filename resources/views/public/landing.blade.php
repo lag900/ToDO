@@ -149,6 +149,41 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             border: 1px solid var(--slate-200);
         }
+        .info-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+        .info-section h2 {
+            font-size: 28px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            color: var(--slate-900);
+            text-align: center;
+        }
+        .info-section p {
+            color: var(--slate-600);
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        .features-grid {
+            display: grid;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .feature-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid var(--slate-200);
+        }
+        .feature-item strong {
+            display: block;
+            color: var(--slate-800);
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
+        }
         footer {
             padding: 3rem 0;
             border-top: 1px solid var(--slate-200);
@@ -185,6 +220,8 @@
             font-size: 0.875rem;
             color: #94a3b8;
         }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
     </style>
 </head>
 <body>
@@ -200,7 +237,7 @@
 
     <main class="container hero">
         <div>
-            <div class="badge">v1.0 is Live!</div>
+            <div class="badge">Task management platform with Google Calendar sync</div>
             <h1>The smartest way to <span class="text-primary">organize</span> your work.</h1>
             <p class="hero-p">
                 Todo Batucore helps you manage personal tasks, team projects, and deadlines in one beautiful interface.
@@ -214,41 +251,66 @@
             <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore App Preview" class="hero-img">
         </div>
     </main>
-<section style="max-width:900px;margin:80px auto;text-align:center;padding:40px">
-    <h2 style="font-size:28px;font-weight:900;margin-bottom:20px">
-        About Todo Batucore
-    </h2>
 
-    <p style="color:#475569;font-size:18px;margin-bottom:15px">
-        Todo Batucore is a productivity and task management web application that allows users to manage tasks and optionally sync them with Google Calendar.
-    </p>
+    <section class="info-section">
+        <h2>About Todo Batucore</h2>
+        
+        <p>
+            Todo Batucore is a productivity and task management web application that helps users organize tasks, manage deadlines, collaborate with teams, and synchronize schedules with Google Calendar.
+        </p>
 
-    <p style="color:#475569;font-size:18px;margin-bottom:15px">
-        Users can sign in securely using Google OAuth and choose to connect Google Calendar to create and manage task-related calendar events.
-    </p>
+        <p>
+            Users can securely sign in using Google OAuth and optionally connect their Google Calendar to create, update, and delete task-related events automatically.
+        </p>
 
-    <p style="color:#475569;font-size:16px;margin-top:20px">
-        We request access to Google Calendar only to create and update events related to user tasks. We never sell or share Google user data.
-    </p>
+        <p class="text-center" style="margin-top: 30px; font-weight: 500;">
+            This is the official homepage of Todo Batucore application.
+        </p>
+    </section>
 
-    <p style="font-size:14px;margin-top:20px;color:#64748b">
-        This is the official homepage of the Todo Batucore application used for Google OAuth verification.
-    </p>
+    <section class="info-section" style="background-color: var(--slate-50); border-radius: 2rem; margin-bottom: 4rem;">
+        <h2>Google Data Usage & Privacy</h2>
+        
+        <div class="features-grid">
+            <div class="feature-item">
+                <strong>Authentication</strong>
+                We use Google OAuth only to sign you into your account securely.
+            </div>
+            
+            <div class="feature-item">
+                <strong>Calendar Access</strong>
+                If you enable Google Calendar sync, Todo Batucore creates and manages events only for your tasks.
+            </div>
 
-    <p style="font-size:14px;color:#64748b">
-        Todo Batucore is not affiliated with or endorsed by Google.
-    </p>
-</section>
+            <div class="feature-item">
+                <strong>Data Storage</strong>
+                We store only the Google Event ID required for synchronization.
+            </div>
+
+            <div class="feature-item">
+                <strong>No Data Selling</strong>
+                We never sell, share, or transfer Google user data to third parties.
+            </div>
+
+            <div class="feature-item">
+                <strong>User Control</strong>
+                You can disconnect Google Calendar anytime from settings.
+            </div>
+        </div>
+    </section>
 
     <footer class="container">
         <div class="footer-content">
-            <span style="font-weight: 900; color: var(--slate-800);">Todo Batucore</span>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start;">
+                <span style="font-weight: 900; color: var(--slate-800);">Todo Batucore</span>
+                <span style="font-size: 0.75rem; color: var(--slate-600); max-width: 300px;">Todo Batucore is an independent productivity web application and is not affiliated with Google.</span>
+            </div>
             <div class="footer-links">
                 <a href="/privacy-policy">Privacy Policy</a>
-                <a href="/terms-of-service">Terms of Service</a>
+                <a href="/terms-of-service">Terms</a>
                 <a href="mailto:abdozero2030@gmail.com">Contact</a>
             </div>
-            <p class="copyright">© 2026 Todo Batucore.</p>
+            <p class="copyright">© 2026 Todo Batucore</p>
         </div>
     </footer>
 </body>
