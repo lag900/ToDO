@@ -91,17 +91,9 @@
         </h2>
 
         <div class="bg-white dark:bg-slate-800 rounded-3xl p-10 shadow-xl text-left space-y-4">
-
-          <p><strong>Authentication:</strong> We use Google OAuth only to sign you into your account securely.</p>
-
-          <p><strong>Calendar Access:</strong> If you enable Google Calendar sync, Todo Batucore creates and manages events only for your tasks.</p>
-
-          <p><strong>Data Storage:</strong> We store only the Google Event ID required for synchronization.</p>
-
-          <p><strong>No Data Selling:</strong> We never sell, share, or transfer Google user data to third parties.</p>
-
-          <p><strong>User Control:</strong> You can disconnect Google Calendar anytime from settings.</p>
-
+          <p class="font-semibold">We request Google sign-in to authenticate you and the Google Calendar Events scope only to create and manage task-related events when you opt in.</p>
+          <p class="text-sm text-slate-600">We store only the Google Event ID necessary for synchronization. For full details see our <a href="/privacy-policy" class="text-indigo-600 font-bold">Privacy Policy</a>.</p>
+          <p class="text-sm">Todo Batucore is not affiliated with Google. Contact: <a href="mailto:abdozero2030@gmail.com" class="text-indigo-600 font-bold">abdozero2030@gmail.com</a></p>
         </div>
       </div>
     </section>

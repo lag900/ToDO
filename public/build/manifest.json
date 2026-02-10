@@ -1,11 +1,4 @@
 {
-  "_ArrowLeftIcon-U2D5aCE5.js": {
-    "file": "assets/ArrowLeftIcon-U2D5aCE5.js",
-    "name": "ArrowLeftIcon",
-    "imports": [
-      "_vendor-vue-C0IDuzMx.js"
-    ]
-  },
   "_components-heavy-VbHvuA2A.css": {
     "file": "assets/components-heavy-VbHvuA2A.css",
     "src": "_components-heavy-VbHvuA2A.css"
@@ -61,7 +54,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-CF8TDjs-.js",
+    "file": "assets/app-CSvlVh2q.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -97,7 +90,7 @@
     ]
   },
   "resources/js/pages/Landing.vue": {
-    "file": "assets/Landing-CSBRwoxn.js",
+    "file": "assets/Landing-Bg5wq8EB.js",
     "name": "Landing",
     "src": "resources/js/pages/Landing.vue",
     "isDynamicEntry": true,
@@ -107,7 +100,7 @@
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/Landing-CPDQ0Rw8.css"
+      "assets/Landing-g4Jk0BEC.css"
     ]
   },
   "resources/js/pages/Login.vue": {
@@ -125,18 +118,17 @@
     ]
   },
   "resources/js/pages/PrivacyPolicy.vue": {
-    "file": "assets/PrivacyPolicy-DsiPUch8.js",
+    "file": "assets/PrivacyPolicy-4-orNKPP.js",
     "name": "PrivacyPolicy",
     "src": "resources/js/pages/PrivacyPolicy.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-vue-C0IDuzMx.js",
       "_pages-dashboard-Hu4J_6cY.js",
-      "_ArrowLeftIcon-U2D5aCE5.js",
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
-      "assets/PrivacyPolicy-D-7QvvDV.css"
+      "assets/PrivacyPolicy-DMaRk30k.css"
     ]
   },
   "resources/js/pages/Settings.vue": {
@@ -154,14 +146,13 @@
     ]
   },
   "resources/js/pages/TermsOfService.vue": {
-    "file": "assets/TermsOfService-D5rFdc7g.js",
+    "file": "assets/TermsOfService-D5S3hAmv.js",
     "name": "TermsOfService",
     "src": "resources/js/pages/TermsOfService.vue",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-vue-C0IDuzMx.js",
       "_pages-dashboard-Hu4J_6cY.js",
-      "_ArrowLeftIcon-U2D5aCE5.js",
       "_vendor-utils-bzb-uA31.js"
     ],
     "css": [
