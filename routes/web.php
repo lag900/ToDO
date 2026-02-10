@@ -2,54 +2,44 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-
 use App\Http\Controllers\AuthController;
 
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback']);
 
-// --- DATABASE MAINTENANCE & FIX TOOLS ---
+
+// --- DATABASE TOOLS (اختياري) ---
 Route::get('/maintain/migrate', function () {
-    if (request()->query('key') !== 'admin123') return "Unauthorized. Access key required.";
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $output = \Illuminate\Support\Facades\Artisan::output();
-        return "<h1>✅ Migrations Executed!</h1><pre>$output</pre>";
-    } catch (\Exception $e) {
-        return "<h1>❌ Migration Error</h1><p>" . $e->getMessage() . "</p>";
-    }
+    if (request()->query('key') !== 'admin123') return "Unauthorized.";
+    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+    return "<h1>✅ Migrations Executed!</h1>";
 });
 
 Route::get('/maintain/clear-cache', function () {
     if (request()->query('key') !== 'admin123') return "Unauthorized.";
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('view:clear');
-    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
     return "<h1>⚡ Cache Cleared!</h1>";
 });
 
-Route::get('/delivery-file/{filename}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'showFile']);
 
-// --- PUBLIC PAGES (Blade) for Google OAuth Compliance ---
+// ===============================
+// 🔥 PUBLIC PAGES (IMPORTANT FOR GOOGLE)
+// ===============================
+
 Route::get('/', function () {
     if (Auth::check()) {
-        return view('app');
+        return view('app'); // SPA dashboard
     }
-    return view('public.landing');
+    return view('public.landing'); // landing page
 });
+
 Route::view('/privacy-policy', 'public.privacy');
 Route::view('/terms-of-service', 'public.terms');
 
-// Public route for privacy policy (ensure accessible without auth)
-Route::get('/privacy-policy', function () {
-    // If using server-side Blade view:
-    // return view('privacy-policy');
-    // If SPA serving index, redirect to SPA route so Vue renders it:
-    return view('app'); // ...existing SPA entry view
-});
 
-// --- SPA MAIN ROUTE ---
+// ===============================
+// 🔥 SPA MAIN ROUTE (لا تلمس)
+// ===============================
 Route::get('/{any}', function () {
     return view('app');
-})->where('any', '^(?!api|auth|maintain|delivery-file|google).*$');
+})->where('any', '^(?!api|auth|maintain|delivery-file).*$');

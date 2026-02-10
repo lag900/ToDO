@@ -214,6 +214,31 @@
             <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore App Preview" class="hero-img">
         </div>
     </main>
+<section style="max-width:900px;margin:80px auto;text-align:center;padding:40px">
+    <h2 style="font-size:28px;font-weight:900;margin-bottom:20px">
+        About Todo Batucore
+    </h2>
+
+    <p style="color:#475569;font-size:18px;margin-bottom:15px">
+        Todo Batucore is a productivity and task management web application that allows users to manage tasks and optionally sync them with Google Calendar.
+    </p>
+
+    <p style="color:#475569;font-size:18px;margin-bottom:15px">
+        Users can sign in securely using Google OAuth and choose to connect Google Calendar to create and manage task-related calendar events.
+    </p>
+
+    <p style="color:#475569;font-size:16px;margin-top:20px">
+        We request access to Google Calendar only to create and update events related to user tasks. We never sell or share Google user data.
+    </p>
+
+    <p style="font-size:14px;margin-top:20px;color:#64748b">
+        This is the official homepage of the Todo Batucore application used for Google OAuth verification.
+    </p>
+
+    <p style="font-size:14px;color:#64748b">
+        Todo Batucore is not affiliated with or endorsed by Google.
+    </p>
+</section>
 
     <footer class="container">
         <div class="footer-content">
