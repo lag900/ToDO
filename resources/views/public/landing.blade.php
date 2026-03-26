@@ -248,7 +248,7 @@
         </div>
         <div class="hero-img-container">
             <div class="hero-blur"></div>
-            <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore App Preview" class="hero-img">
+            <img src="{{ asset('images/logo.png') }}" alt="Todo Batucore App Preview" class="hero-img">
         </div>
     </main>
 

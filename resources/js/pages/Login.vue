@@ -8,7 +8,7 @@
 
     <div class="w-full max-w-md">
       <div class="text-center mb-10">
-        <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="Todo Batucore Logo" class="h-24 w-auto mx-auto mb-6">
+        <img src="/images/logo.png" alt="Todo Batucore Logo" class="h-24 w-auto mx-auto mb-6">
         <h1 class="text-3xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Welcome to Todo Batucore</h1>
         <p class="text-slate-500 dark:text-slate-400 font-medium">Your tasks, synced and simplified.</p>
       </div>

@@ -7,7 +7,7 @@
     <meta name="description" content="Todo Batucore is a task management platform with Google Calendar integration to manage tasks, deadlines and schedules.">
     <meta name="google-site-verification" content="h1Fs3IbIUF8YlHVRbEjb5te9hFjnwJRPXYLMA5TjxAM" />
     <title>Todo Batucore</title>
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/jqQRtc95/thinker-(1).png">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     
     <!-- Optimized Font Loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

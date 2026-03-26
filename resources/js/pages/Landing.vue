@@ -44,7 +44,7 @@
 
         <div class="relative">
           <div class="bg-white dark:bg-slate-900 rounded-[2rem] border p-4 shadow-2xl">
-            <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" class="rounded-[1.5rem] w-full opacity-20">
+            <img src="/images/logo.png" class="rounded-[1.5rem] w-full opacity-20">
           </div>
         </div>
 
