@@ -50,10 +50,8 @@ class TaskDeliveryController extends Controller
                 ]);
             }
 
-            // Move task to Done if not already
-            if ($task->status !== 'done') {
-                $task->update(['status' => 'done']);
-            }
+            // Status is intentionally NOT changed here.
+            // Deliveries/Attachments are independent of task status.
 
             return $delivery->load(['items', 'user']);
         });

@@ -147,98 +147,13 @@
             </section>
 
             <!-- Delivery Section -->
-            <section v-if="task.deliveries?.length || canEditFull" class="p-8 bg-slate-50 dark:bg-slate-800/40 rounded-[2rem] border border-slate-100 dark:border-slate-800 space-y-6">
-              <div class="flex items-center justify-between">
-                <h3 class="text-xs font-heading font-bold uppercase tracking-[0.2em] text-slate-400">Task Deliveries</h3>
-                <button 
-                  v-if="canEditFull" 
-                  @click="showDeliveryModal = true"
-                  class="text-[10px] font-heading font-bold uppercase tracking-widest px-4 py-2 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 hover:bg-emerald-600 transition-all flex items-center gap-2 active-tap"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                  Add New Delivery
-                </button>
-              </div>
-
-              <div v-if="task.deliveries?.length" class="space-y-10">
-                <div v-for="delivery in task.deliveries" :key="delivery.id" class="space-y-6 relative pl-6 border-l-2 border-emerald-500/20">
-                  <div class="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-emerald-500"></div>
-                  <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                      <div class="flex items-center gap-2">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Package from {{ delivery.user?.display_name }}</p>
-                        <span class="text-[8px] font-black uppercase text-slate-400 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">{{ formatDate(delivery.created_at) }}</span>
-                      </div>
-                      <button 
-                        v-if="delivery.user_id === auth.user.id || role === 'owner'"
-                        @click="deleteDelivery(delivery.id)"
-                        class="p-1 px-2 text-[9px] font-black uppercase tracking-widest bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-lg transition-all active-tap"
-                      >
-                        Delete Package
-                      </button>
-                    </div>
-                    <div v-if="delivery.notes" class="bg-white dark:bg-slate-900/50 p-4 rounded-2xl text-sm italic text-slate-600 dark:text-slate-300 border border-slate-100 dark:border-slate-800/50">
-                      {{ delivery.notes }}
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div 
-                        v-for="item in delivery.items" 
-                        :key="item.id" 
-                        @dblclick="openItem(getProperUrl(item.content))"
-                        class="flex items-center gap-3 p-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2rem] hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/5 transition-all group relative cursor-pointer active-tap"
-                      >
-                        <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                          <svg v-if="item.type === 'link'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                          <svg v-else-if="item.name.toLowerCase().endsWith('.pdf')" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 15h3a1.5 1.5 0 0 0 0-3H9v6"/><path d="M5 12v6"/><path d="M5 15h3"/></svg>
-                          <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        </div>
-                        <div class="flex-1 min-w-0 pr-8 text-left">
-                          <p class="text-[11px] font-black text-slate-800 dark:text-white truncate uppercase tracking-tight">{{ item.name }}</p>
-                          <p v-if="item.description" class="text-[9px] font-bold text-slate-400 uppercase truncate">{{ item.description }}</p>
-                        </div>
-                        <div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                          <a 
-                            v-if="item.type !== 'link'"
-                            :href="getProperUrl(item.content, true)" 
-                            @click.stop
-                            class="p-2 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg transition-all"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                          </a>
-                          <a 
-                            :href="getProperUrl(item.content, false)" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            @click.stop
-                            class="p-2 bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-lg transition-all"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div v-else class="text-center py-10 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4">
-                 <div class="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 mb-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                 </div>
-                 <div>
-                   <p class="text-xs font-heading font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Professional Delivery Terminal</p>
-                   <p class="text-[10px] font-medium text-slate-400 mt-1">Ready for hand-over artifacts</p>
-                 </div>
-                 <button 
-                   v-if="canEditFull"
-                   @click="showDeliveryModal = true"
-                   class="mt-2 px-6 py-3 bg-emerald-500 text-white rounded-xl shadow-xl shadow-emerald-500/20 hover:scale-105 hover:bg-emerald-600 transition-all font-heading font-bold text-xs uppercase tracking-widest flex items-center gap-2 active-tap"
-                 >
-                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                   Process Delivery
-                 </button>
-              </div>
-            </section>
+            <DeliveriesSection 
+              v-if="task"
+              :items="flattenedDeliveries"
+              :can-add="canEditFull"
+              @add="handleNewAttachments"
+              @remove="deleteDelivery"
+            />
 
             <section class="grid grid-cols-1 sm:grid-cols-2 gap-8 py-6 border-y border-slate-50 dark:border-slate-800/50">
               <div class="space-y-4">
@@ -448,21 +363,12 @@
        Syncing Artifacts...
     </div>
   </transition>
-
-  <!-- Delivery Modal -->
-  <TaskDeliveryModal 
-    v-if="showDeliveryModal"
-    :show="showDeliveryModal"
-    :task="task"
-    @close="showDeliveryModal = false"
-    @delivered="fetchTask(); emit('updated')"
-  />
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import axios from 'axios';
-import TaskDeliveryModal from './TaskDeliveryModal.vue';
+import DeliveriesSection from './DeliveriesSection.vue';
 import CustomDatePicker from './CustomDatePicker.vue';
 import { useAuthStore } from '../stores/auth';
 
@@ -581,6 +487,53 @@ const subtaskProgress = computed(() => {
   const done = task.value.subtasks.filter(s => s.status === 'done').length;
   return (done / task.value.subtasks.length) * 100;
 });
+
+const flattenedDeliveries = computed(() => {
+  if (!task.value?.deliveries) return [];
+  const items = [];
+  task.value.deliveries.forEach(d => {
+    d.items.forEach(i => {
+      items.push({
+        ...i,
+        delivery_id: d.id, 
+        id: i.id, // Actual item ID
+        creator: d.user?.display_name,
+        created_at: d.created_at
+      });
+    });
+  });
+  return items;
+});
+
+const handleNewAttachments = async (newItems) => {
+  try {
+    isSyncing.value = true;
+    await axios.post(`/api/tasks/${props.taskId}/deliver`, {
+      items: newItems,
+      notes: ''
+    });
+    await fetchTask();
+    emit('updated');
+  } catch (e) {
+    alert('Failed to add attachments');
+  } finally {
+    isSyncing.value = false;
+  }
+};
+
+const deleteDelivery = async (deliveryId) => {
+  if (!confirm('Remove this attachment?')) return;
+  try {
+    isSyncing.value = true;
+    await axios.delete(`/api/deliveries/${deliveryId}`);
+    await fetchTask();
+    emit('updated');
+  } catch (e) {
+    alert('Failed to remove attachment');
+  } finally {
+    isSyncing.value = false;
+  }
+};
 
 const editedTask = ref({ title: '', description: '', priority: '', status: '', due_date: '', due_time: '', start_date: '', start_time: '', assigned_to: null, is_reviewed: false, is_public: true });
 

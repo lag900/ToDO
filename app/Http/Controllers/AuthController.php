@@ -94,7 +94,7 @@ class AuthController extends Controller
         }
 
         $this->processPendingInvitations($user);
-        Auth::login($user);
+        Auth::login($user, true);
 
         if (!$user->has_completed_onboarding) {
             return redirect('/welcome');
