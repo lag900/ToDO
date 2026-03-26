@@ -4,7 +4,7 @@
       <!-- Primary Row: Core Navigation -->
       <div class="flex flex-col xl:flex-row items-center justify-between gap-3">
         <div class="flex items-center gap-6 w-full sm:w-auto">
-          <img src="https://i.postimg.cc/jqQRtc95/thinker-(1).png" alt="THINKER Logo" class="h-20 lg:h-30  w-auto object-contain">
+          <img src="/images/logo.png" alt="THINKER Logo" class="h-20 lg:h-30  w-auto object-contain">
           <ContextSwitcher @create="openCreateModal" />
         </div>
 
