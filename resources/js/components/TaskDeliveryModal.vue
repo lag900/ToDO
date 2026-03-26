@@ -162,6 +162,7 @@ import {
   UploadCloud as UploadCloudIcon,
   Trash2 as TrashIcon
 } from 'lucide-vue-next';
+import { useUIStore } from '../stores/ui';
 
 const props = defineProps({
   show: Boolean,
@@ -169,6 +170,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'delivered']);
+const ui = useUIStore();
 
 const notes = ref('');
 const items = ref([]);
@@ -234,7 +236,7 @@ const handleFiles = async (files) => {
     } catch (e) {
       console.error('Failed to upload file', file.name, e);
       const errorMsg = e.response?.data?.message || e.message || 'Unknown error';
-      alert(`Failed to upload ${file.name}: ${errorMsg}`);
+      ui.notify(`Failed to upload ${file.name}: ${errorMsg}`, 'error');
     }
   }
 
@@ -257,10 +259,11 @@ const submitDelivery = async () => {
             notes: notes.value,
             items: items.value
         });
+        ui.notify('Task delivered successfully!', 'success');
         emit('delivered');
         emit('close');
     } catch (e) {
-        alert(e.response?.data?.message || 'Failed to deliver task');
+        ui.notify(e.response?.data?.message || 'Failed to deliver task', 'error');
     } finally {
         loading.value = false;
     }

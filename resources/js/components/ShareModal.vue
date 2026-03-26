@@ -82,6 +82,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import axios from 'axios';
+import { useUIStore } from '../stores/ui';
 
 const props = defineProps({
   show: Boolean,
@@ -91,6 +92,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close']);
+const ui = useUIStore();
 
 const loading = ref(false);
 const members = ref([]);
@@ -133,21 +135,24 @@ const invite = async () => {
       id: props.id
     });
     form.value.email = '';
+    ui.notify('Invitation sent', 'success');
     fetchMembers();
   } catch (error) {
-    alert(error.response?.data?.message || 'Failed to invite user');
+    ui.notify(error.response?.data?.message || 'Failed to invite', 'error');
   } finally {
     loading.value = false;
   }
 };
 
 const removeMember = async (userId) => {
-  if (!confirm('Remove this member from access?')) return;
+  const confirmed = await ui.confirm('Remove this member from access?', { variant: 'rose', confirmText: 'Remove' });
+  if (!confirmed) return;
   try {
     await axios.delete(`/api/share/members/${props.type.toLowerCase()}/${props.id}/${userId}`);
+    ui.notify('Member removed', 'success');
     fetchMembers();
   } catch (error) {
-    alert('Failed to remove member');
+    ui.notify('Failed to remove member', 'error');
   }
 };
 

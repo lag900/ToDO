@@ -484,10 +484,17 @@
                    <th class="pb-6 px-4 text-right">Actions</th>
                  </tr>
                </thead>
-               <tbody class="divide-y divide-slate-50 dark:divide-slate-800">
+               <transition-group 
+                 tag="tbody" 
+                 name="task-list" 
+                 class="divide-y divide-slate-50 dark:divide-slate-800"
+               >
                    <tr v-for="task in filteredTasks" :key="task.id" @click="selectedTaskId = task.id" class="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td class="py-6 px-4">
-                       <p class="font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors">{{ task.title }}</p>
+                       <p :class="['font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors', task.id.toString().startsWith('temp-') ? 'opacity-60' : '']">
+                         {{ task.title }}
+                         <span v-if="task.id.toString().startsWith('temp-')" class="ml-2 inline-flex items-center text-[9px] font-black uppercase text-indigo-500 animate-pulse">Syncing...</span>
+                       </p>
                        <p v-if="workspaceStore.globalMode" class="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1">
                           {{ task.board?.plan?.workspace?.name }} · {{ task.board?.plan?.workspace?.type }}
                        </p>
@@ -535,12 +542,17 @@
                        </div>
                     </td>
                    </tr>
-               </tbody>
+               </transition-group>
             </table>
         </div>
 
         <!-- Mobile Task Cards Layer -->
-        <div v-else class="space-y-4 px-2">
+        <transition-group 
+          v-else 
+          tag="div" 
+          name="task-list" 
+          class="space-y-4 px-2"
+        >
             <div 
               v-for="task in filteredTasks" :key="task.id" 
               @touchstart="handleTaskTouchStart($event, task)"
@@ -573,7 +585,10 @@
 
                   <!-- Content: Title & Work indicator -->
                   <div class="space-y-2">
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white leading-tight">{{ task.title }}</h3>
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white leading-tight">
+                      {{ task.title }}
+                      <span v-if="task.id.toString().startsWith('temp-')" class="ml-1 inline-flex items-center text-[8px] font-black uppercase text-indigo-500 animate-pulse">Syncing...</span>
+                    </h3>
                     
                     <div v-if="task.working_by" class="flex items-center gap-2">
                       <img :src="task.working_by.avatar || 'https://ui-avatars.com/api/?name=' + task.working_by.display_name" class="w-6 h-6 rounded-full border-2 border-indigo-500 shadow-sm">
@@ -586,16 +601,10 @@
                   </div>
 
                   <!-- Footer: Meta Info -->
-                  <div class="flex items-center justify-between pt-4 border-t border-slate-50 dark:border-slate-800">
-                    <div class="flex items-center gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                      <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ formatDate(task.deadline || task.created_at) }}</span>
-                    </div>
                     <div class="flex items-center -space-x-1.5">
                        <img :src="task.creator?.avatar || 'https://ui-avatars.com/api/?name=' + task.creator?.display_name" :title="'Created by: ' + (task.creator?.display_name || 'System')" class="w-6 h-6 rounded-full ring-2 ring-white dark:ring-slate-900 grayscale">
                     </div>
                   </div>
-                </div>
 
                 <!-- Swipe Indicators (Hidden, visual only during swipe) -->
                 <div class="absolute inset-y-0 -left-16 w-16 bg-emerald-500 flex items-center justify-center text-white transition-opacity opacity-0">
@@ -610,7 +619,7 @@
                </div>
                <p class="text-sm font-black uppercase tracking-[0.2em] text-slate-400">No tasks found</p>
             </div>
-        </div>
+        </transition-group>
     </div>
 
 
@@ -784,8 +793,16 @@
 
         <!-- Fixed Footer -->
         <div class="px-5 sm:px-8 py-4 sm:py-6 flex gap-3 sm:gap-4 sticky bottom-0 bg-white dark:bg-slate-900 z-10 rounded-b-[2rem] sm:rounded-b-[3rem] border-t border-slate-50 dark:border-slate-800">
-          <button @click="showModal = false" class="flex-1 px-4 py-3 sm:py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors text-xs sm:text-sm">Cancel</button>
-          <button @click="saveTask" :disabled="loading" class="flex-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 transition-all text-xs sm:text-sm">
+          <button @click="showModal = false" :disabled="loading" class="flex-1 px-4 py-3 sm:py-3.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl font-bold hover:bg-slate-200 transition-colors text-xs sm:text-sm disabled:opacity-50">Cancel</button>
+          <button 
+            @click="saveTask" 
+            :disabled="loading || !newTask.title" 
+            class="flex-2 px-6 py-3 sm:py-3.5 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/30 hover:bg-indigo-700 disabled:opacity-50 transition-all text-xs sm:text-sm flex items-center justify-center gap-2"
+          >
+            <svg v-if="loading" class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
             {{ loading ? 'CREATING...' : 'CREATE NOW' }}
           </button>
         </div>
@@ -1029,6 +1046,7 @@
        <p class="text-xs font-black uppercase tracking-[0.2em]">Global Management Mode · All Contexts</p>
        <button @click="workspaceStore.toggleGlobalMode()" class="ml-4 text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-all">Exit</button>
     </div>
+
   </div>
 </template>
 
@@ -1227,7 +1245,7 @@ const updateTaskStatus = async (task, newStatus) => {
         task.status = originalStatus; // Revert on failure
         const idx = tasks.value.findIndex(t => t.id === task.id);
         if (idx !== -1) tasks.value[idx].status = originalStatus;
-        alert('Action failed: ' + (error.response?.data?.message || 'Server error'));
+        ui.notify('Action failed: ' + (error.response?.data?.message || 'Server error'), 'error');
     }
 };
 
@@ -1353,12 +1371,18 @@ const canDeleteTask = (task) => {
 };
 
 const confirmDelete = async (task) => {
-  if (confirm('Are you sure you want to delete this task?')) {
+  const confirmed = await ui.confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`, { 
+    variant: 'rose', 
+    confirmText: 'Delete Task' 
+  });
+  
+  if (confirmed) {
     try {
       await axios.delete(`/api/tasks/${task.id}`);
+      ui.notify('Task deleted successfully', 'success');
       fetchTasks();
     } catch (error) {
-      alert('Delete failed');
+      ui.notify('Delete failed', 'error');
     }
   }
 };
@@ -1638,67 +1662,88 @@ watch(() => workspaceStore.globalMode, (newVal) => {
 
 
 const saveTask = async () => {
-    if (!newTask.value.title) return;
-    loading.value = true;
+    if (!newTask.value.title || loading.value) return;
+
+    // 1. Prepare Payload
+    const taskData = { ...newTask.value };
+    
+    // Helper to handle dates from CustomDatePicker (already in d/m/Y)
+    const formatToCustom = (dateStr, timeStr) => {
+        if (!dateStr) return null;
+        const time = timeStr || '00:00';
+        if (dateStr.includes('/')) return `${dateStr} ${time}:00`;
+        const [y, m, d] = dateStr.split('-');
+        return `${d}/${m}/${y} ${time}:00`;
+    };
+
+    if (taskData.due_date) {
+        taskData.deadline = formatToCustom(taskData.due_date, taskData.due_time || '23:59');
+    }
+
+    if (taskData.start_date) {
+        taskData.start_date = formatToCustom(taskData.start_date, taskData.start_time || '09:00');
+    }
+
+    // Add context to payload
+    if (currentWorkspace.value) {
+        taskData.workspace_id = currentWorkspace.value.id;
+        const firstPlan = currentWorkspace.value.plans?.[0];
+        const firstBoard = firstPlan?.boards?.[0];
+
+        if (firstBoard) {
+            taskData.board_id = firstBoard.id;
+        } else {
+            ui.notify('Please create a plan and board first.', 'warning');
+            return;
+        }
+    }
+
+    const payload = { ...taskData };
+    delete payload.due_date;
+    delete payload.due_time;
+    delete payload.start_time;
+
+    // 2. Optimistic UI: Reset form and close modal instantly to allow continuous creation
+    const tempId = 'temp-' + Date.now();
+    const optimisticTask = {
+        id: tempId,
+        ...payload,
+        created_at: new Date().toISOString(),
+        creator: auth.user,
+        assigned_by: auth.user,
+        board: { plan: { workspace: currentWorkspace.value } }
+    };
+
+    // Add to top of current column and reset UI state
+    tasks.value.unshift(optimisticTask);
+    showModal.value = false;
+    const backupNewTask = { ...newTask.value }; // Backup for rollback
+    resetNewTask();
+    
+    // We don't block the UI with loading.value = true for the entire screen anymore
+    // loading.value is used only for the button which is now hidden anyway
+
     try {
-        const taskData = { ...newTask.value };
+        const response = await axios.post('/api/tasks', payload);
         
-        // Helper to handle dates from CustomDatePicker (already in d/m/Y)
-        const formatToCustom = (dateStr, timeStr) => {
-            if (!dateStr) return null;
-            
-            const time = timeStr || '00:00';
-            
-            // If it's already in d/m/Y structure, just append time
-            if (dateStr.includes('/')) {
-                return `${dateStr} ${time}:00`;
-            }
-            
-            // Fallback for YYYY-MM-DD (unlikely with CustomDatePicker but for safety)
-            const [y, m, d] = dateStr.split('-');
-            return `${d}/${m}/${y} ${time}:00`;
-        };
-
-        if (taskData.due_date) {
-            taskData.deadline = formatToCustom(taskData.due_date, taskData.due_time || '23:59');
+        // 3. Replace Optimistic Task with Real Task from Server
+        const index = tasks.value.findIndex(t => t.id === tempId);
+        if (index !== -1) {
+            tasks.value[index] = response.data;
         }
-
-        if (taskData.start_date) {
-            taskData.start_date = formatToCustom(taskData.start_date, taskData.start_time || '09:00');
-        }
-
-        // Add context to payload
-        if (currentWorkspace.value) {
-            taskData.workspace_id = currentWorkspace.value.id;
-            
-            // Hierarchy: Workspace -> Plan -> Board -> Task
-            const firstPlan = currentWorkspace.value.plans?.[0];
-            const firstBoard = firstPlan?.boards?.[0];
-
-            if (firstBoard) {
-                taskData.board_id = firstBoard.id;
-            } else {
-                alert('No boards found in this workspace. Please create a plan and board first.');
-                loading.value = false;
-                return;
-            }
-        }
-
-        const payload = { ...taskData };
-        delete payload.due_date;
-        delete payload.due_time;
-        delete payload.start_time;
-
-        await axios.post('/api/tasks', payload);
-        showModal.value = false;
-        resetNewTask();
-        await fetchTasks();
-  } catch (error) {
-    console.error('Task save error:', error);
-    alert('Error: ' + (error.response?.data?.message || 'Connection failed'));
-  } finally {
-    loading.value = false;
-  }
+        
+        ui.notify('Task created successfully', 'success');
+        // Silent refresh to ensure everything (ID hierarchies, etc.) is in sync
+        fetchTasks(true);
+    } catch (error) {
+        // 4. Rollback on failure
+        tasks.value = tasks.value.filter(t => t.id !== tempId);
+        ui.notify(error.response?.data?.message || 'Failed to create task. Restoration available.', 'error');
+        
+        // Re-open and restore data so they don't lose work
+        newTask.value = backupNewTask;
+        showModal.value = true;
+    }
 };
 
 // Create Workspace Logic
@@ -1723,11 +1768,12 @@ const createWorkspace = async () => {
         });
         showCreateWorkspaceModal.value = false;
         newWorkspace.value = { name: '', type: 'Personal', intent: 'Personal Use' };
+        ui.notify('Workspace created successfully', 'success');
         // Refetch workspaces (which now includes their projects)
         await workspaceStore.fetchWorkspaces(); 
     } catch (error) {
         const message = error.response?.data?.message || 'Failed to create workspace';
-        alert(message);
+        ui.notify(message, 'error');
     }
 };
 
@@ -1821,7 +1867,7 @@ const onDrop = async (event, newStatus) => {
       updatingTaskIds.value.delete(task.id);
       task.status = oldStatus;
       task.assigned_to = oldAssignee;
-      alert('Failed to sync. ' + (error.response?.data?.message || 'Server error'));
+      ui.notify('Failed to sync. ' + (error.response?.data?.message || 'Server error'), 'error');
     }
   }
 };
@@ -1865,6 +1911,23 @@ const formatDate = (dateString) => {
   max-height: 0;
   opacity: 0;
   transform: translateY(-10px);
+}
+
+
+/* Task List Animation */
+.task-list-enter-active, .task-list-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.task-list-enter-from {
+  opacity: 0;
+  transform: translateY(-20px) scale(0.95);
+}
+.task-list-leave-to {
+  opacity: 0;
+  transform: translateX(20px) scale(0.95);
+}
+.task-list-move {
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input[type="date"], input[type="time"], input[type="month"] {

@@ -371,8 +371,10 @@ import axios from 'axios';
 import DeliveriesSection from './DeliveriesSection.vue';
 import CustomDatePicker from './CustomDatePicker.vue';
 import { useAuthStore } from '../stores/auth';
+import { useUIStore } from '../stores/ui';
 
 const auth = useAuthStore();
+const ui = useUIStore();
 const props = defineProps({
   taskId: { type: [Number, String], required: true },
   role: { type: String, default: 'viewer' }
@@ -514,22 +516,25 @@ const handleNewAttachments = async (newItems) => {
     });
     await fetchTask();
     emit('updated');
+    ui.notify('Attachments added successfully', 'success');
   } catch (e) {
-    alert('Failed to add attachments');
+    ui.notify('Failed to add attachments', 'error');
   } finally {
     isSyncing.value = false;
   }
 };
 
 const deleteDelivery = async (deliveryId) => {
-  if (!confirm('Remove this attachment?')) return;
+  const confirmed = await ui.confirm('Remove this attachment?', { variant: 'rose', confirmText: 'Remove' });
+  if (!confirmed) return;
   try {
     isSyncing.value = true;
     await axios.delete(`/api/deliveries/${deliveryId}`);
     await fetchTask();
     emit('updated');
+    ui.notify('Attachment removed', 'success');
   } catch (e) {
-    alert('Failed to remove attachment');
+    ui.notify('Failed to remove attachment', 'error');
   } finally {
     isSyncing.value = false;
   }
@@ -641,7 +646,7 @@ const updateTask = async () => {
     // Rollback UI
     task.value = previousState;
     syncLocalStateFromTask();
-    alert('Failed to sync changes. Please check your connection.');
+    ui.notify('Failed to sync changes. Check connection.', 'error');
   } finally {
     setTimeout(() => { isSyncing.value = false; }, 800);
   }
@@ -678,17 +683,19 @@ const toggleSubtask = async (sub) => {
   } catch (error) { 
     sub.status = originalStatus;
     if (subIndex !== -1) task.value.subtasks[subIndex].status = originalStatus;
-    alert('Toggle failed'); 
+    ui.notify('Update failed', 'error'); 
   }
 };
 
 const deleteTask = async () => {
-  if (!confirm('Permanently delete?')) return;
+  const confirmed = await ui.confirm('Permanently delete this task? This action cannot be undone.', { variant: 'rose', confirmText: 'Delete' });
+  if (!confirmed) return;
   try {
     await axios.delete(`/api/tasks/${props.taskId}`);
+    ui.notify('Task deleted', 'success');
     emit('updated');
     emit('close');
-  } catch (error) { alert('Failed to delete'); }
+  } catch (error) { ui.notify('Failed to delete', 'error'); }
 };
 
 const enableAddSubtask = async () => {
@@ -774,9 +781,9 @@ const createSubtask = async () => {
     
     // Handle validation errors specifically
     if (error.response?.status === 422) {
-        alert('Validation failed: ' + JSON.stringify(error.response.data.errors));
+        ui.notify('Validation failed: Correct inputs', 'warning');
     } else {
-        alert('Failed to save subtask. Please try again.');
+        ui.notify('Failed to save subtask', 'error');
     }
   } finally {
       isCreatingSubtask.value = false;
@@ -794,13 +801,15 @@ const updateSubtaskTitle = async (sub) => {
 };
 
 const deleteSubtaskId = async (id) => {
-  if (!confirm('Delete this subtask?')) return;
+  const confirmed = await ui.confirm('Delete this subtask?', { variant: 'rose', confirmText: 'Delete' });
+  if (!confirmed) return;
   try {
      await axios.delete(`/api/tasks/${id}`);
      fetchTask();
      emit('updated');
+     ui.notify('Subtask deleted', 'success');
   } catch (e) {
-     alert('Failed to delete subtask');
+     ui.notify('Failed to delete subtask', 'error');
   }
 };
 

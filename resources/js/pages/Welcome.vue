@@ -53,9 +53,11 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
+import { useUIStore } from '../stores/ui';
 
 const auth = useAuthStore();
 const router = useRouter();
+const ui = useUIStore();
 const displayName = ref(auth.user?.name || '');
 const loading = ref(false);
 
@@ -65,7 +67,7 @@ const submit = async () => {
     await auth.completeOnboarding(displayName.value);
     router.push('/');
   } catch (error) {
-    alert('Oops! Something went wrong. Please try again.');
+    ui.notify('Oops! Something went wrong. Please try again.', 'error');
   } finally {
     loading.value = false;
   }

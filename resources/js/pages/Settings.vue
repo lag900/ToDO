@@ -279,10 +279,12 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { useWorkspaceStore } from '../stores/workspace';
 import { watch } from 'vue';
+import { useUIStore } from '../stores/ui';
 
 const router = useRouter();
 const auth = useAuthStore();
 const workspaceStore = useWorkspaceStore();
+const ui = useUIStore();
 
 const loading = ref(false);
 const showToast = ref(false);
@@ -314,16 +316,10 @@ const isOwner = computed(() => {
     return r === 'owner';
   };
 
-  // 1. Direct check from API-provided role (appended attribute)
   if (matchesRole(activeWorkspace.value.user_role)) return true;
-  
-  // 2. Check if user is the explicit creator/owner in DB
   if (String(activeWorkspace.value.owner_id) === String(auth.user.id)) return true;
-  
-  // 3. Check if user has owner role in the pivot data of the current selection
   if (matchesRole(activeWorkspace.value.pivot?.role)) return true;
   
-  // 4. Search the members list for current user (ID or Email match)
   const member = activeWorkspace.value.members?.find(m => 
     String(m.id) === String(auth.user.id) || 
     (m.email && auth.user.email && m.email.toLowerCase() === auth.user.email.toLowerCase())
@@ -344,7 +340,6 @@ const isPageReady = computed(() => {
 onMounted(async () => {
    loading.value = true;
    if (!auth.initialized) await auth.fetchUser();
-   // Always fetch workspaces to ensure we have the latest roles/members
    await workspaceStore.fetchWorkspaces();
    syncLocalState();
    loading.value = false;
@@ -368,8 +363,6 @@ watch(() => workspaceStore.initialized, (isInit) => {
    if (isInit) syncLocalState();
 });
 
-// Watch activeWorkspace specifically to reload sub-settings when data objects change
-// Watch specific properties to reload settings without deep overhead
 watch(() => activeWorkspace.value?.settings, (newVal) => {
    loadWorkspaceSettings();
 }, { deep: true });
@@ -405,10 +398,9 @@ const saveUserSettings = async () => {
          notification_settings: settings.value
       });
       await auth.fetchUser();
-      showToast.value = true;
-      setTimeout(() => showToast.value = false, 3000);
+      ui.notify('Notification settings saved', 'success');
    } catch (error) {
-      console.error('Failed to save settings', error);
+      ui.notify('Failed to save settings', 'error');
    } finally {
       loading.value = false;
    }
@@ -419,7 +411,7 @@ const saveWorkspaceSettings = async () => {
    loading.value = true;
    try {
       await workspaceStore.updateWorkspaceSettings(selectedWorkspaceId.value, wsSettings.value);
-      showToast.value = true;
+      ui.notify('Workspace settings updated', 'success');
       
       // SPA Navigation: Go back to dashboard after showing success
       setTimeout(() => {
@@ -427,11 +419,11 @@ const saveWorkspaceSettings = async () => {
       }, 1500);
    } catch (error) {
       console.error('Failed to save workspace settings', error);
-      alert('Failed to save workspace settings: ' + (error.response?.data?.message || 'Server error'));
+      ui.notify('Failed to save workspace settings: ' + (error.response?.data?.message || 'Server error'), 'error');
    } finally {
       loading.value = false;
    }
-};
+};;
 </script>
 
 <style scoped>

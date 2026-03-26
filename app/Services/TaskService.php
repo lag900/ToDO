@@ -160,15 +160,8 @@ class TaskService
                 ]);
             }
 
-            // Sync with Google Calendar
-            if ($task->start_date && $task->deadline) {
-                // handleSync handles authentication/sync for all relevant workspace members
-                $this->googleCalendarService->handleSync($task, 'created');
-                $this->logActivity($task, 'google_calendar_sync', ['status' => 'synced']);
-            }
-
-            // Notifications now handled by TaskObserver for SSoT consistency
-
+            // Google Calendar Sync and Notifications are handled by TaskObserver to ensure fast responses.
+            
             return $task->load(['assignee', 'assignedBy', 'board.plan', 'creator', 'workingBy']);
 
         });
@@ -302,21 +295,7 @@ class TaskService
                 ]);
             }
 
-            // Notifications now handled by TaskObserver for SSoT consistency
-
-            // Sync with Google Calendar if relevant fields changed
-            $calendarFields = ['start_date', 'deadline', 'title', 'description', 'status', 'assigned_to', 'working_by_id'];
-            $shouldSync = false;
-            foreach ($calendarFields as $f) {
-                if (array_key_exists($f, $data)) {
-                    $shouldSync = true;
-                    break;
-                }
-            }
-            // Only sync if we have dates (or if dates are being removed, handleSync handles that too)
-            if ($shouldSync) {
-                $this->googleCalendarService->handleSync($task, 'updated');
-            }
+            // Google Calendar Sync and Notifications are handled by TaskObserver.
 
             return $task;
         });
@@ -373,8 +352,7 @@ class TaskService
 
             $this->logActivity($task, 'deleted', ['title' => $task->title]);
 
-            // Remove from Google Calendar
-            $this->googleCalendarService->handleSync($task, 'deleted');
+            // Google Calendar removal is handled by TaskObserver.
 
             $task->checklists()->delete();
             $task->subtasks()->update(['parent_id' => null]);

@@ -94,10 +94,14 @@ import { ref, computed } from 'vue';
 import { useWorkspaceStore } from '../stores/workspace';
 import { storeToRefs } from 'pinia';
 
+import { useUIStore } from '../stores/ui';
+
 const emit = defineEmits(['create']);
 
 const workspaceStore = useWorkspaceStore();
+const ui = useUIStore();
 const { workspaces, currentWorkspace } = storeToRefs(workspaceStore);
+
 const isOpen = ref(false);
 
 const getIcon = (type) => {
@@ -121,12 +125,18 @@ const openCreate = () => {
 };
 
 const handleConfirmDelete = async (workspace) => {
-  if (confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`)) {
+  const confirmed = await ui.confirm(`Are you sure you want to delete "${workspace.name}"? This action cannot be undone.`, {
+    variant: 'rose',
+    confirmText: 'Delete Context'
+  });
+
+  if (confirmed) {
     try {
       await workspaceStore.deleteWorkspace(workspace.id);
+      ui.notify('Context deleted successfully', 'success');
     } catch (error) {
-      const msg = error.response?.data?.message || 'Failed to delete workspace. Please check your permissions or network.';
-      alert(msg);
+      const msg = error.response?.data?.message || 'Failed to delete workspace.';
+      ui.notify(msg, 'error');
     }
   }
 };
