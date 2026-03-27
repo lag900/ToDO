@@ -28,9 +28,9 @@ Route::get('/maintain/clear-cache', function () {
 
 Route::get('/', function () {
     if (Auth::check()) {
-        return view('app'); // SPA dashboard
+        return redirect('/dashboard');
     }
-    return view('public.landing'); // landing page
+    return view('public.landing');
 });
 
 Route::view('/privacy-policy', 'public.privacy');

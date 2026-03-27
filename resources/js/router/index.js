@@ -7,7 +7,7 @@ const routes = [
         path: '/',
         name: 'landing',
         component: () => import('../pages/Landing.vue'),
-        meta: { requiresAuth: false }
+        meta: { guestOnly: true }
     },
     {
         path: '/dashboard',
@@ -86,9 +86,9 @@ router.beforeEach(async (to, from, next) => {
         return next({ name: 'workspace-setup' });
     }
 
-    // 3. Redirect authenticated users away from Guest pages (login, landing if already in)
-    // Note: We only redirect away from 'landing' if we want to force them into the app.
-    if (isAuthenticated && isWelcomeComplete && hasWorkspace && (to.name === 'workspace-setup' || to.name === 'welcome' || to.name === 'login')) {
+    // 3. Redirect authenticated users away from guest-only pages
+    if (isAuthenticated && isWelcomeComplete && hasWorkspace && 
+        (to.name === 'workspace-setup' || to.name === 'welcome' || to.name === 'login' || to.name === 'landing')) {
         return next({ name: 'dashboard' });
     }
 
