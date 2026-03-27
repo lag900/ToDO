@@ -318,6 +318,8 @@
                 <div class="relative group/priority">
                   <button 
                     @click.stop="activePriorityPickerTaskId = task.id"
+                    @touchstart.stop
+                    @touchend.stop
                     :class="[
                       priorityClass(task.priority), 
                       {'ring-2 ring-indigo-500 shadow-lg scale-105 z-30': activePriorityPickerTaskId === task.id}
@@ -379,18 +381,20 @@
                     >
                   </div>
                   
-                  <!-- Delete Action (Hover) -->
                   <button 
                     v-if="canDeleteTask(task)"
                     @click.stop="confirmDelete(task)"
-                    class="opacity-0 group-hover:opacity-100 p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                    @touchstart.stop
+                    @touchend.stop
+                    class="relative z-50 pointer-events-auto opacity-0 group-hover:opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                    :class="{'opacity-100': isMobile}"
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                   </button>
                 </div>
               </div>
 
-              <div class="flex items-start justify-between gap-2" @click="selectedTaskId = task.id">
+              <div class="flex items-start justify-between gap-2">
                 <div class="flex-1">
                   <h4 class="font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors mb-2 leading-tight text-lg">{{ task.title }}</h4>
                   
@@ -563,6 +567,8 @@
                           <button 
                             v-if="getRoleForTask(task) !== 'viewer'"
                             @click.stop="openTaskDetails(task)"
+                            @touchstart.stop
+                            @touchend.stop
                             class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all"
                             title="Edit Task"
                           >
@@ -571,7 +577,9 @@
                           <button 
                             v-if="canDeleteTask(task)"
                             @click.stop="confirmDelete(task)"
-                            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                            @touchstart.stop
+                            @touchend.stop
+                            class="relative z-50 pointer-events-auto p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                             title="Delete Task"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
@@ -1125,6 +1133,7 @@ import { ref, onMounted, onUnmounted, computed, watch, defineAsyncComponent } fr
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 import { useWorkspaceStore } from '../stores/workspace';
+import { useUIStore } from '../stores/ui';
 import { storeToRefs } from 'pinia';
 import CalendarView from '../components/CalendarView.vue';
 import ContextSwitcher from '../components/ContextSwitcher.vue';
@@ -1138,6 +1147,7 @@ const TaskDetails = defineAsyncComponent(() => import('../components/TaskDetails
 
 const auth = useAuthStore();
 const workspaceStore = useWorkspaceStore();
+const ui = useUIStore();
 const { currentWorkspace } = storeToRefs(workspaceStore);
 
 const allColumns = [
@@ -1535,6 +1545,7 @@ const canDeleteTask = (task) => {
 };
 
 const confirmDelete = async (task) => {
+  console.log('Confirming delete for task:', task.id);
   const confirmed = await ui.confirm(`Are you sure you want to delete "${task.title}"? This action cannot be undone.`, { 
     variant: 'rose', 
     confirmText: 'Delete Task' 
