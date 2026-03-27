@@ -1,125 +1,155 @@
 <template>
   <transition name="fade">
-    <div v-if="task" class="fixed inset-0 z-[10000] flex justify-end overflow-hidden">
+    <div class="fixed inset-0 z-[10000] flex justify-end overflow-hidden">
       <!-- Backdrop -->
-      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="$emit('close')"></div>
+      <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" @click="$emit('close')"></div>
       
       <!-- Drawer -->
-      <transition name="slide-right" appear>
-        <div v-if="task" class="relative w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col z-10 drawer-content transition-all duration-300">
-          
-          <!-- Status Banner if Completed -->
-          <div v-if="task.status === 'done'" class="bg-[var(--color-status-done)] text-white px-6 py-2 flex items-center gap-2 justify-center text-xs font-heading font-bold uppercase tracking-[0.3em] relative overflow-hidden group">
-            {{ task.deliveries?.length > 0 ? 'Task Delivered' : 'Task Completed' }}
-          </div>
+      <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col z-10 drawer-content transition-all duration-300">
+        
+        <!-- Status Banner if Completed (Loading Safe) -->
+        <div v-if="task?.status === 'done'" class="bg-[var(--color-status-done)] text-white px-6 py-2 flex items-center gap-2 justify-center text-xs font-heading font-bold uppercase tracking-[0.3em] relative overflow-hidden group animate-in slide-in-from-top duration-300">
+          {{ task.deliveries?.length > 0 ? 'Task Delivered' : 'Task Completed' }}
+        </div>
 
-          <!-- Header -->
-          <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
-            <div class="flex items-center gap-4">
-              <!-- Back button for mobile -->
-              <button @click="$emit('close')" class="sm:hidden flex items-center gap-2 text-slate-500 font-heading font-bold uppercase tracking-widest text-xs pr-2 border-r border-slate-100 dark:border-slate-800">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
-                Back
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-4">
+            <!-- Back button for mobile -->
+            <button @click="$emit('close')" class="sm:hidden flex items-center gap-2 text-slate-500 font-heading font-bold uppercase tracking-widest text-xs pr-2 border-r border-slate-100 dark:border-slate-800">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+              Back
+            </button>
+
+            <!-- Custom Priority Dropdown -->
+            <div class="relative priority-dropdown">
+              <button 
+                @click.stop="togglePriorityMenu"
+                :disabled="!canEditFull"
+                :class="[
+                  priorityClass(editedTask.priority), 
+                  {'cursor-not-allowed opacity-50': !canEditFull},
+                  {'animate-pulse-subtle': isSyncing}
+                ]" 
+                class="flex items-center gap-1.5 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 rounded-full tracking-widest border-none outline-none cursor-pointer transition-all active-tap relative"
+              >
+                <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                {{ editedTask.priority }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-50 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+                
+                <!-- Tiny sync indicator -->
+                <div v-if="isSyncing" class="absolute -top-1 -right-1 w-2 h-2 bg-indigo-500 rounded-full border border-white dark:border-slate-800 animate-ping"></div>
               </button>
 
-              <!-- Custom Priority Dropdown -->
-              <div class="relative">
-                <button 
-                  @click.stop="togglePriorityMenu"
-                  :disabled="!canEditFull"
-                  :class="[priorityClass(editedTask.priority), {'cursor-not-allowed opacity-80': !canEditFull}]" 
-                  class="flex items-center gap-1.5 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 rounded-full tracking-widest border-none outline-none cursor-pointer transition-pop active-tap"
-                >
-                  <span class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
-                  {{ editedTask.priority }}
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-50 ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
+              <transition name="scale-in">
+                <div v-if="showPriorityMenu" class="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                   <div class="space-y-1">
+                      <button 
+                        v-for="p in ['low', 'medium', 'high', 'urgent']" 
+                        :key="p"
+                        @click="selectPriority(p)"
+                        class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group"
+                      >
+                         <div class="flex items-center gap-2">
+                            <div :class="priorityDotClass(p)" class="w-2 h-2 rounded-full ring-1 ring-offset-1 ring-offset-white dark:ring-offset-slate-800"></div>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{{ p }}</span>
+                         </div>
+                         <svg v-if="editedTask.priority === p" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
+                   </div>
+                </div>
+              </transition>
+            </div>
 
-                <transition name="scale-in">
-                  <div v-if="showPriorityMenu" class="absolute top-full left-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
-                     <div class="space-y-1">
+            <!-- Custom Status Dropdown -->
+            <div class="relative">
+              <button 
+                @click.stop="toggleStatusMenu"
+                :disabled="!canChangeStatus"
+                class="flex items-center gap-2 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg tracking-widest border border-slate-200 dark:border-slate-700 cursor-pointer transition-pop active-tap hover:bg-slate-200 dark:hover:bg-slate-700"
+                :class="{'cursor-not-allowed opacity-80': !canChangeStatus}"
+              >
+                <span class="text-xs">{{ getStatusIcon(editedTask.status) }}</span>
+                {{ getStatusLabel(editedTask.status) }}
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-400 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+
+              <transition name="scale-in">
+                <div v-if="showStatusMenu" class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
+                   <div class="space-y-1">
+                      <template v-for="option in statusOptions" :key="option.value">
                         <button 
-                          v-for="p in ['low', 'medium', 'high', 'urgent']" 
-                          :key="p"
-                          @click="selectPriority(p)"
-                          class="w-full flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group"
+                          @click="selectStatus(option.value)"
+                          class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group text-left"
                         >
-                           <div class="flex items-center gap-2">
-                              <div :class="priorityDotClass(p)" class="w-2 h-2 rounded-full ring-1 ring-offset-1 ring-offset-white dark:ring-offset-slate-800"></div>
-                              <span class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white">{{ p }}</span>
+                           <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-500 group-hover:scale-110 transition-transform">
+                              <span class="text-sm">{{ option.icon }}</span>
                            </div>
-                           <svg v-if="editedTask.priority === p" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                           <div class="flex-1">
+                              <p class="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200">{{ option.label }}</p>
+                              <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{{ option.desc }}</p>
+                           </div>
+                           <div v-if="editedTask.status === option.value" class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
                         </button>
-                     </div>
-                  </div>
-                </transition>
-              </div>
-
-              <!-- Custom Status Dropdown -->
-              <div class="relative">
-                <button 
-                  @click.stop="toggleStatusMenu"
-                  :disabled="!canChangeStatus"
-                  class="flex items-center gap-2 text-[10px] font-heading font-extrabold uppercase px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg tracking-widest border border-slate-200 dark:border-slate-700 cursor-pointer transition-pop active-tap hover:bg-slate-200 dark:hover:bg-slate-700"
-                  :class="{'cursor-not-allowed opacity-80': !canChangeStatus}"
-                >
-                  <span class="text-xs">{{ getStatusIcon(editedTask.status) }}</span>
-                  {{ getStatusLabel(editedTask.status) }}
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-400 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-
-                <transition name="scale-in">
-                  <div v-if="showStatusMenu" class="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden z-50 p-1.5 origin-top-left animate-in fade-in zoom-in-95 duration-200">
-                     <div class="space-y-1">
-                        <template v-for="option in statusOptions" :key="option.value">
-                          <button 
-                            @click="selectStatus(option.value)"
-                            class="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group text-left"
-                          >
-                             <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-900 text-slate-500 group-hover:scale-110 transition-transform">
-                                <span class="text-sm">{{ option.icon }}</span>
-                             </div>
-                             <div class="flex-1">
-                                <p class="text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200">{{ option.label }}</p>
-                                <p class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">{{ option.desc }}</p>
-                             </div>
-                             <div v-if="editedTask.status === option.value" class="w-1.5 h-1.5 rounded-full bg-indigo-500"></div>
-                          </button>
-                        </template>
-                     </div>
-                  </div>
-                </transition>
-              </div>
-
-              <div v-if="editedTask.status === 'testing'" class="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 ml-2 transition-all">
-                 <input 
-                   type="checkbox" 
-                   :id="'review-check-' + taskId"
-                   :name="'is_reviewed_' + taskId"
-                   v-model="editedTask.is_reviewed" 
-                   @change="updateTask" 
-                   class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
-                 >
-                 <label :for="'review-check-' + taskId" class="text-[10px] font-bold uppercase tracking-widest text-blue-700 dark:text-blue-300 cursor-pointer select-none">Mark Reviewed</label>
-              </div>
+                      </template>
+                   </div>
+                </div>
+              </transition>
             </div>
-            <div class="flex items-center gap-2">
-              <div class="hidden sm:flex items-center gap-2 mr-4">
-                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
-                 <p class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-[0.2em]">TASK-{{ task.id }}</p>
-              </div>
-              <button v-if="canDelete" @click="deleteTask" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-300 hover:text-rose-500 rounded-xl transition-all active-tap" title="Delete Task">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-              </button>
-              <button @click="$emit('close')" class="hidden sm:block p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors active-tap">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-              </button>
+
+            <div v-if="editedTask.status === 'testing'" class="hidden sm:flex items-center gap-2 px-3 py-1 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 ml-2 transition-all">
+               <input 
+                 type="checkbox" 
+                 :id="'review-check-' + taskId"
+                 :name="'is_reviewed_' + taskId"
+                 v-model="editedTask.is_reviewed" 
+                 @change="updateTask" 
+                 class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+               >
+               <label :for="'review-check-' + taskId" class="text-[10px] font-bold uppercase tracking-widest text-blue-700 dark:text-blue-300 cursor-pointer select-none">Mark Reviewed</label>
             </div>
           </div>
+          <div class="flex items-center gap-2">
+            <div class="hidden sm:flex items-center gap-2 mr-4" v-if="task">
+               <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+               <p class="text-[10px] font-heading font-bold text-slate-400 uppercase tracking-[0.2em]">TASK-{{ task.id }}</p>
+            </div>
+            <transition name="fade">
+              <div v-if="isSyncing" class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-xl text-[8px] font-black uppercase tracking-widest animate-in fade-in slide-in-from-right-2 duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                Syncing
+              </div>
+            </transition>
 
-          <!-- Content -->
-          <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
-            <!-- Title & Description -->
+            <button v-if="canDelete && task" @click="deleteTask" class="p-2 hover:bg-rose-50 dark:hover:bg-rose-500/10 text-slate-300 hover:text-rose-500 rounded-xl transition-all active-tap" title="Delete Task">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            </button>
+            <button @click="$emit('close')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors active-tap">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <!-- Skeleton Loader -->
+          <TaskDetailsSkeleton v-if="!task && isLoading" />
+
+          <!-- Error State -->
+          <div v-else-if="fetchError" class="flex flex-col items-center justify-center py-20 text-center space-y-4 animate-in fade-in duration-300">
+            <div class="p-4 bg-rose-50 dark:bg-rose-500/10 rounded-2xl">
+               <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-rose-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-800 dark:text-white uppercase tracking-widest">{{ fetchError }}</p>
+              <p class="text-xs text-slate-400 mt-1">Please check your connection and try again.</p>
+            </div>
+            <button @click="fetchTask" class="px-6 py-3 bg-indigo-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-indigo-500/20 active-tap">Retry Connection</button>
+          </div>
+
+          <!-- Actual Content -->
+          <div v-else-if="task" class="space-y-10 animate-in fade-in duration-300">
+
             <!-- Title & Description -->
             <section>
               <label :for="'task-title-' + taskId" class="sr-only">Task Title</label>
@@ -127,7 +157,7 @@
                 :id="'task-title-' + taskId"
                 name="title"
                 v-model="editedTask.title" 
-                @blur="updateTask"
+                @blur="debouncedUpdateTask"
                 :disabled="!canEditFull"
                 class="w-full text-3xl font-heading font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none focus:ring-0 mb-4 p-0"
                 :class="{'cursor-not-allowed': !canEditFull}"
@@ -138,7 +168,7 @@
                 :id="'task-desc-' + taskId"
                 name="description"
                 v-model="editedTask.description" 
-                @blur="updateTask"
+                @blur="debouncedUpdateTask"
                 :disabled="!canEditFull"
                 class="w-full text-base text-slate-500 dark:text-slate-400 bg-transparent border-none outline-none focus:ring-0 p-0 resize-none min-h-[100px]"
                 :class="{'cursor-not-allowed': !canEditFull}"
@@ -149,10 +179,11 @@
             <!-- Delivery Section -->
             <DeliveriesSection 
               v-if="task"
-              :items="flattenedDeliveries"
+              :items="allAttachments"
               :can-add="canEditFull"
               @add="handleNewAttachments"
               @remove="deleteDelivery"
+              @retry="retryUpload"
             />
 
             <section class="grid grid-cols-1 sm:grid-cols-2 gap-8 py-6 border-y border-slate-50 dark:border-slate-800/50">
@@ -238,7 +269,6 @@
             </section>
 
             <!-- Sub-tasks -->
-            <!-- Sub-tasks -->
             <section class="space-y-4">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
@@ -284,16 +314,16 @@
                       <div class="flex items-center gap-2">
                           <div v-if="sub.is_optimistic" class="w-4 h-4 rounded-full border-2 border-slate-200 border-t-indigo-500 animate-spin"></div>
                           <div v-else class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
-                          <img 
-                            v-if="sub.assigned_to" 
-                            :src="sub.assignee?.avatar || 'https://ui-avatars.com/api/?name=' + sub.assignee?.display_name" 
-                            class="w-5 h-5 rounded-full"
-                            title="Assigned"
-                          >
-                          <button @click="deleteSubtaskId(sub.id)" class="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                          </button>
-                      </div>
+                            <img 
+                              v-if="sub.assigned_to" 
+                              :src="sub.assignee?.avatar || 'https://ui-avatars.com/api/?name=' + sub.assignee?.display_name" 
+                              class="w-5 h-5 rounded-full"
+                              title="Assigned"
+                            >
+                            <button @click="deleteSubtaskId(sub.id)" class="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                            </button>
+                          </div>
                       </div>
                   </div>
                 </transition-group>
@@ -336,48 +366,43 @@
               </div>
             </section>
           </div>
-
-          <!-- Footer Info -->
-          <div class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-3 gap-6">
-            <div class="flex items-center gap-3">
-              <img :src="task.creator?.avatar || 'https://ui-avatars.com/api/?name=' + (task.creator?.display_name || 'System')" class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 object-cover">
-               <div class="text-left">
-                <p class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Owner</p>
-                <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ task.creator?.display_name }}</p>
-              </div>
-            </div>
-            <div class="text-right sm:text-left flex flex-col justify-center">
-                <p class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Recipient</p>
-                <p class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{{ task.assignee?.display_name || 'Unassigned' }}</p>
-             </div>
-          </div>
         </div>
-      </transition>
-    </div>
-  </transition>
 
-  <!-- Global UI Feedback -->
-  <transition name="fade">
-    <div v-if="isSyncing" class="fixed top-8 left-1/2 -translate-x-1/2 px-6 py-2 bg-slate-900 text-white rounded-full text-[10px] font-black uppercase tracking-widest z-[10001] shadow-2xl flex items-center gap-3">
-       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-       Syncing Artifacts...
+        <!-- Footer Info (Loading Safe) -->
+        <div v-if="task" class="p-6 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 sm:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom duration-300">
+          <div class="flex items-center gap-3">
+            <img :src="task.creator?.avatar || 'https://ui-avatars.com/api/?name=' + (task.creator?.display_name || 'System')" class="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 object-cover">
+             <div class="text-left">
+              <p class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Owner</p>
+              <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ task.creator?.display_name }}</p>
+            </div>
+          </div>
+          <div class="text-right sm:text-left flex flex-col justify-center">
+              <p class="text-[10px] font-heading font-bold uppercase tracking-widest text-slate-400">Recipient</p>
+              <p class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{{ task.assignee?.display_name || 'Unassigned' }}</p>
+           </div>
+        </div>
+      </div>
     </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue';
 import axios from 'axios';
 import DeliveriesSection from './DeliveriesSection.vue';
 import CustomDatePicker from './CustomDatePicker.vue';
+import TaskDetailsSkeleton from './TaskDetailsSkeleton.vue';
 import { useAuthStore } from '../stores/auth';
 import { useUIStore } from '../stores/ui';
+import { compressImage } from '../utils/imageCompressor';
 
 const auth = useAuthStore();
 const ui = useUIStore();
 const props = defineProps({
   taskId: { type: [Number, String], required: true },
-  role: { type: String, default: 'viewer' }
+  role: { type: String, default: 'viewer' },
+  initialData: { type: Object, default: null }
 });
 
 const emit = defineEmits(['close', 'updated']);
@@ -390,26 +415,55 @@ const canChangeStatus = computed(() => true);
 const canDelete = computed(() => props.role === 'owner');
 
 const task = ref(null);
+const isLoading = ref(false);
+const fetchError = ref(null);
 const workspaceMembers = ref([]);
+const debounceTimer = ref(null);
+
+const debouncedUpdateTask = () => {
+  clearTimeout(debounceTimer.value);
+  debounceTimer.value = setTimeout(() => updateTask(), 800);
+};
 const isSyncing = ref(false);
 const calendarStatus = ref(null);
 const syncTimeout = ref(null);
 const showPriorityMenu = ref(false);
 const showStatusMenu = ref(false);
+const pendingDeliveries = ref([]);
+
+const allAttachments = computed(() => {
+  return [...pendingDeliveries.value, ...flattenedDeliveries.value];
+});
 
 const togglePriorityMenu = () => { showPriorityMenu.value = !showPriorityMenu.value; showStatusMenu.value = false; };
 const toggleStatusMenu = () => { showStatusMenu.value = !showStatusMenu.value; showPriorityMenu.value = false; };
 
 const closeMenus = (e) => {
-   if (!e.target.closest('.relative')) {
+   if (!e.target.closest('.priority-dropdown') && !e.target.closest('.status-dropdown')) {
       showPriorityMenu.value = false;
       showStatusMenu.value = false;
    }
 };
 
 onMounted(() => {
-   fetchTask();
-   window.addEventListener('click', closeMenus);
+    if (props.initialData) {
+       task.value = props.initialData;
+       syncLocalStateFromTask();
+    }
+    fetchTask();
+    window.addEventListener('click', closeMenus);
+});
+
+watch(() => props.taskId, (newId) => {
+   if (newId) {
+      if (props.initialData) {
+         task.value = props.initialData;
+         syncLocalStateFromTask();
+      } else {
+         task.value = null; // Show skeleton if no initial data
+      }
+      fetchTask();
+   }
 });
 
 onUnmounted(() => {
@@ -417,9 +471,16 @@ onUnmounted(() => {
 });
 
 const selectPriority = (p) => {
+   if (editedTask.value.priority === p) {
+      showPriorityMenu.value = false;
+      return;
+   }
+   
+   // Close instantly for SaaS feel
+   showPriorityMenu.value = false;
+   
    editedTask.value.priority = p;
    updateTask();
-   showPriorityMenu.value = false;
 };
 
 const selectStatus = (s) => {
@@ -463,7 +524,7 @@ const statusOptions = computed(() => {
       { value: 'in_progress', label: 'Work', icon: '⚡', desc: 'Active execution' },
    ];
    
-   if (props.task?.board?.plan?.workspace?.settings?.enable_review_step !== false) {
+   if (task.value?.board?.plan?.workspace?.settings?.enable_review_step !== false) {
       opts.push({ value: 'testing', label: 'Review', icon: '👀', desc: 'Quality control' });
    }
    
@@ -508,19 +569,78 @@ const flattenedDeliveries = computed(() => {
 });
 
 const handleNewAttachments = async (newItems) => {
+  for (const item of newItems) {
+    if (item.status === 'syncing') {
+      pendingDeliveries.value.push(item);
+      uploadAndDeliver(item);
+    } else {
+      // Link or other synchronous item
+      try {
+        isSyncing.value = true;
+        await axios.post(`/api/tasks/${props.taskId}/deliver`, {
+          items: [item],
+          notes: ''
+        });
+        await fetchTask();
+        emit('updated');
+      } catch (e) {
+        ui.notify('Failed to add attachment', 'error');
+      } finally {
+        isSyncing.value = false;
+      }
+    }
+  }
+};
+
+const uploadAndDeliver = async (item) => {
   try {
-    isSyncing.value = true;
+    let fileToUpload = item.file;
+    
+    // 1. Browser-based compression
+    if (item.type === 'image') {
+      try {
+        const compressed = await compressImage(item.file, { quality: 0.8 });
+        if (compressed) fileToUpload = compressed;
+      } catch (e) {
+        console.warn('Compression failed, using original', e);
+      }
+    }
+
+    // 2. Upload file
+    const formData = new FormData();
+    formData.append('file', fileToUpload);
+    const uploadRes = await axios.post('/api/delivery-upload', formData);
+
+    // 3. Create Delivery Record
     await axios.post(`/api/tasks/${props.taskId}/deliver`, {
-      items: newItems,
+      items: [{
+        type: item.type,
+        name: item.name,
+        content: uploadRes.data.path,
+        description: null
+      }],
       notes: ''
     });
+
+    // 4. Success: Cleanup and refresh
+    pendingDeliveries.value = pendingDeliveries.value.filter(p => p.id !== item.id);
     await fetchTask();
     emit('updated');
-    ui.notify('Attachments added successfully', 'success');
   } catch (e) {
-    ui.notify('Failed to add attachments', 'error');
-  } finally {
-    isSyncing.value = false;
+    console.error('Upload/Delivery failed', e);
+    const index = pendingDeliveries.value.findIndex(p => p.id === item.id);
+    if (index !== -1) {
+      pendingDeliveries.value[index].status = 'error';
+    }
+    ui.notify(`Failed to upload ${item.name}`, 'error');
+  }
+};
+
+const retryUpload = (item) => {
+  const index = pendingDeliveries.value.findIndex(p => p.id === item.id);
+  if (index !== -1) {
+    pendingDeliveries.value[index].status = 'syncing';
+    uploadAndDeliver(pendingDeliveries.value[index]);
   }
 };
 
@@ -543,6 +663,10 @@ const deleteDelivery = async (deliveryId) => {
 const editedTask = ref({ title: '', description: '', priority: '', status: '', due_date: '', due_time: '', start_date: '', start_time: '', assigned_to: null, is_reviewed: false, is_public: true });
 
 const fetchTask = async () => {
+  if (!props.taskId) return;
+  
+  isLoading.value = true;
+  fetchError.value = null;
   try {
     const response = await axios.get(`/api/tasks/${props.taskId}`);
     task.value = response.data;
@@ -552,6 +676,9 @@ const fetchTask = async () => {
     fetchWorkspaceMembers(response.data.board.plan.workspace_id);
   } catch (error) {
     console.error('Error fetching task details', error);
+    fetchError.value = 'Failed to load task details';
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -620,11 +747,17 @@ const updateTask = async () => {
 
   try {
     const dataToSend = { ...editedTask.value, deadline, start_date };
+    
+    // 1. Optimistic UI Update
+    task.value = { ...task.value, ...dataToSend };
+
+    // 2. Background Sync
     const response = await axios.patch(`/api/tasks/${props.taskId}`, dataToSend);
     
+    // Update with final server state (includes activity logs, real IDs, etc.)
     task.value = { ...task.value, ...response.data };
     
-    // Pulse animation for success
+    // Subtle visual confirmation
     const el = document.querySelector('.drawer-content');
     if (el) {
        el.classList.add('animate-pulse-success');
@@ -638,17 +771,14 @@ const updateTask = async () => {
     }
 
     emit('updated');
-    // Optimized: Only fetch if we suspect data outside our control changed (like activity log)
-    // Or if we need to refresh specific relations. For simple updates, local merge above is enough.
-    // fetchTask(); // REMOVED: redundant full fetch, we already merged response.data
   } catch (error) {
     console.error('Update failed', error);
-    // Rollback UI
+    // 3. Rollback UI
     task.value = previousState;
-    syncLocalStateFromTask();
+    syncLocalStateFromTask(); // Restores editedTask from task
     ui.notify('Failed to sync changes. Check connection.', 'error');
   } finally {
-    setTimeout(() => { isSyncing.value = false; }, 800);
+    isSyncing.value = false;
   }
 };
 
@@ -859,6 +989,28 @@ const getProperUrl = (content, download = false) => {
 
 .animate-pulse-success {
   animation: pulse-success 0.4s ease-out;
+}
+
+/* Instant Sidebar Transition (translateX + opacity) */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-active .drawer-content {
+  transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+}
+.fade-leave-active .drawer-content {
+  transition: transform 0.3s cubic-bezier(0.7, 0, 0.8, 0);
+}
+
+.fade-enter-from .drawer-content {
+  transform: translateX(100%);
+}
+.fade-leave-to .drawer-content {
+  transform: translateX(100%);
 }
 
 @keyframes pulse-success {

@@ -94,6 +94,6 @@ class Task extends Model
 
     public function deliveries()
     {
-        return $this->hasMany(TaskDelivery::class)->with(['items', 'user'])->latest();
+        return $this->hasMany(TaskDelivery::class)->latest();
     }
 }

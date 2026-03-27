@@ -295,21 +295,58 @@
                  @touchstart="handleTaskTouchStart($event, task)"
                  @touchend="handleTaskTouchEnd($event, task)"
                  @touchmove="handleTaskTouchMove($event)"
-                 @click="handleTaskClick(task)"
-                 @dblclick="handleTaskDblClick(task)"
-                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden transition-pop active-tap select-none"
+                 @mouseenter="handleTaskMouseEnter(task)"
+                 @click="openTaskDetails(task)"
+                 class="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl shadow-slate-200/40 dark:shadow-none border border-slate-100 dark:border-slate-700/50 hover:border-indigo-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300 cursor-pointer group relative overflow-hidden active-tap select-none"
                  :class="{
-                    'ring-4 ring-indigo-500/20 scale-105 z-20': isLongPress && activeDragTaskId === task.id,
-                    'ring-2 ring-indigo-500 border-indigo-500': highlightedTaskId === task.id && !isMobile
+                    'ring-4 ring-indigo-500/20 scale-102 z-20': isLongPress && activeDragTaskId === task.id,
+                    'ring-2 ring-indigo-500 border-indigo-500': highlightedTaskId === task.id && !isMobile,
+                    'opacity-70': syncingTaskIds.has(task.id)
                  }"
             >
+              <!-- Syncing Badge -->
+              <div v-if="syncingTaskIds.has(task.id)" class="absolute top-4 right-4 animate-in fade-in zoom-in duration-300 pointer-events-none z-10">
+                 <div class="flex items-center gap-1.5 px-2 py-1 bg-indigo-50 dark:bg-indigo-500/10 rounded-lg text-indigo-600 dark:text-indigo-400 text-[8px] font-black uppercase tracking-widest ring-1 ring-indigo-100 dark:ring-indigo-500/20">
+                   <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                   Syncing
+                 </div>
+              </div>
             
               <div :class="['absolute left-0 top-0 bottom-0 w-1', column.dotClass]"></div>
 
               <div class="flex justify-between items-start mb-4">
-                <span :class="priorityClass(task.priority)" class="text-[12px] uppercase font-black px-3 py-1 rounded-full tracking-widest">
-                  {{ task.priority }}
-                </span>
+                <div class="relative group/priority">
+                  <button 
+                    @click.stop="activePriorityPickerTaskId = task.id"
+                    :class="[
+                      priorityClass(task.priority), 
+                      {'ring-2 ring-indigo-500 shadow-lg scale-105 z-30': activePriorityPickerTaskId === task.id}
+                    ]" 
+                    class="text-[10px] sm:text-[12px] uppercase font-black px-3 py-1 rounded-full tracking-widest transition-all hover:brightness-110 active-tap flex items-center gap-1"
+                  >
+                    <span>{{ task.priority }}</span>
+                    <ChevronDownIcon v-if="!syncingTaskIds.has(task.id)" class="w-2.5 h-2.5 opacity-50" />
+                    <Loader2Icon v-else class="w-2.5 h-2.5 animate-spin" />
+                  </button>
+
+                  <!-- Inline Priority Picker Dropdown -->
+                  <div v-if="activePriorityPickerTaskId === task.id" 
+                       v-click-outside="() => activePriorityPickerTaskId = null"
+                       class="absolute top-0 left-0 mt-8 w-32 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-[100] p-1.5 animate-in fade-in zoom-in-95 duration-100"
+                  >
+                    <button 
+                      v-for="p in ['low', 'medium', 'high', 'urgent']" :key="p"
+                      @click.stop="updatePrioritySync(task, p)"
+                      class="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group/opt"
+                    >
+                      <div class="flex items-center gap-2">
+                        <div :class="priorityDotClass(p)" class="w-1.5 h-1.5 rounded-full"></div>
+                        <span class="text-[9px] font-black uppercase text-slate-600 dark:text-slate-400 group-hover/opt:text-indigo-600">{{ p }}</span>
+                      </div>
+                      <CheckIcon v-if="task.priority === p" class="w-3 h-3 text-indigo-500" />
+                    </button>
+                  </div>
+                </div>
                 <div class="flex items-center gap-2">
                   <div class="flex items-center -space-x-1.5 flex-row-reverse justify-end">
                     <!-- Working By (Top of stack) -->
@@ -489,7 +526,7 @@
                  name="task-list" 
                  class="divide-y divide-slate-50 dark:divide-slate-800"
                >
-                   <tr v-for="task in filteredTasks" :key="task.id" @click="selectedTaskId = task.id" class="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                   <tr v-for="task in filteredTasks" :key="task.id" @mouseenter="handleTaskMouseEnter(task)" @click="openTaskDetails(task)" class="group cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                     <td class="py-6 px-4">
                        <p :class="['font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 transition-colors', task.id.toString().startsWith('temp-') ? 'opacity-60' : '']">
                          {{ task.title }}
@@ -525,7 +562,7 @@
                        <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button 
                             v-if="getRoleForTask(task) !== 'viewer'"
-                            @click.stop="selectedTaskId = task.id"
+                            @click.stop="openTaskDetails(task)"
                             class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-xl transition-all"
                             title="Edit Task"
                           >
@@ -555,17 +592,47 @@
         >
             <div 
               v-for="task in filteredTasks" :key="task.id" 
-              @touchstart="handleTaskTouchStart($event, task)"
-              @touchmove="handleTaskTouchMove"
-              @touchend="handleTaskTouchEnd($event, task)"
-              class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98] overflow-hidden"
+               @touchstart="handleTaskTouchStart($event, task)"
+               @touchmove="handleTaskTouchMove"
+               @touchend="handleTaskTouchEnd($event, task)"
+               @click="openTaskDetails(task)"
+               class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 transition-all active:scale-[0.98] overflow-hidden"
             >
                 <div class="flex flex-col gap-4">
                   <!-- Header: Status & Priority -->
                     <div class="flex items-center gap-2">
-                      <span :class="priorityClass(task.priority)" class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm">
-                        {{ task.priority }}
-                      </span>
+                        <div class="relative">
+                          <button 
+                            @click.stop="activePriorityPickerTaskId = task.id"
+                            :class="[
+                              priorityClass(task.priority), 
+                              {'ring-2 ring-indigo-500 scale-105 z-30': activePriorityPickerTaskId === task.id}
+                            ]" 
+                            class="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-sm flex items-center gap-1.5 transition-all"
+                          >
+                            <span>{{ task.priority }}</span>
+                            <ChevronDownIcon v-if="!syncingTaskIds.has(task.id)" class="w-3 h-3 opacity-50" />
+                            <Loader2Icon v-else class="w-3 h-3 animate-spin" />
+                          </button>
+
+                          <!-- Mobile Inline Picker -->
+                          <div v-if="activePriorityPickerTaskId === task.id" 
+                               v-click-outside="() => activePriorityPickerTaskId = null"
+                               class="absolute top-0 left-0 mt-8 w-32 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-700 z-[100] p-1.5 animate-in fade-in zoom-in-95 duration-100"
+                          >
+                            <button 
+                              v-for="p in ['low', 'medium', 'high', 'urgent']" :key="p"
+                              @click.stop="updatePrioritySync(task, p)"
+                              class="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                            >
+                              <div class="flex items-center gap-2">
+                                <div :class="priorityDotClass(p)" class="w-1.5 h-1.5 rounded-full"></div>
+                                <span class="text-[9px] font-black uppercase text-slate-600 dark:text-slate-400">{{ p }}</span>
+                              </div>
+                              <CheckIcon v-if="task.priority === p" class="w-3 h-3 text-indigo-500" />
+                            </button>
+                          </div>
+                        </div>
                     </div>
                     <div class="text-right flex flex-col items-end gap-1">
                       <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-lg block">{{ task.status.replace('_', ' ') }}</span>
@@ -630,12 +697,19 @@
       :is-mobile="isMobile" 
       :global-mode="workspaceStore.globalMode"
       v-model:monthYear="filters.monthYear" 
-      @task-click="id => selectedTaskId = id" 
+      @task-click="id => openTaskDetails(tasks.find(t => t.id === id))" 
     />
 
 
     <!-- Task Details Drawer -->
-    <TaskDetails v-if="selectedTaskId" :taskId="selectedTaskId" :role="userRole" @close="selectedTaskId = null" @updated="fetchTasks(true)" />
+    <TaskDetails 
+      v-if="selectedTaskId" 
+      :taskId="selectedTaskId" 
+      :initialData="taskCache[selectedTaskId] || tasks.find(t => t.id === selectedTaskId)"
+      :role="userRole" 
+      @close="selectedTaskId = null" 
+      @updated="fetchTasks(true)" 
+    />
 
     <!-- Enhanced Task Modal -->
     <div v-show="showModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 z-[9999] overflow-y-auto">
@@ -648,7 +722,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                 <span class="text-[10px] font-black uppercase tracking-widest">{{ suggestion.message }}</span>
              </div>
-             <button @click="applySuggestion" class="text-[10px] font-black underline uppercase tracking-widest">Apply</button>
+             <button @click="applySuggestion" class="text-[10px] font-black uppercase tracking-widest">Apply</button>
           </div>
         </transition>
 
@@ -877,14 +951,6 @@
       @close="showShareModal = false" 
     />
 
-    <!-- Task Delivery Modal -->
-    <TaskDeliveryModal 
-      v-if="showDeliveryModal"
-      :show="showDeliveryModal"
-      :task="deliveringTask"
-      @close="showDeliveryModal = false; fetchTasks()"
-      @delivered="fetchTasks()"
-    />
     <transition name="sheet">
       <div v-if="isMobile && showMobileSheet" class="fixed inset-0 z-[10001] flex items-end">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="showMobileSheet = false"></div>
@@ -1047,6 +1113,9 @@
        <button @click="workspaceStore.toggleGlobalMode()" class="ml-4 text-[10px] font-black uppercase bg-white/10 hover:bg-white/20 px-3 py-1 rounded-lg transition-all">Exit</button>
     </div>
 
+
+    <!-- PWA Install Experience -->
+    <PWAInstallPrompt />
   </div>
 </template>
 
@@ -1061,10 +1130,11 @@ import CalendarView from '../components/CalendarView.vue';
 import ContextSwitcher from '../components/ContextSwitcher.vue';
 import ShareModal from '../components/ShareModal.vue';
 import CustomDatePicker from '../components/CustomDatePicker.vue';
+import { ChevronDownIcon, CheckIcon, Loader2Icon } from 'lucide-vue-next';
 
 // Async Components for Performance
+const PWAInstallPrompt = defineAsyncComponent(() => import('../components/PWAInstallPrompt.vue'));
 const TaskDetails = defineAsyncComponent(() => import('../components/TaskDetails.vue'));
-const TaskDeliveryModal = defineAsyncComponent(() => import('../components/TaskDeliveryModal.vue'));
 
 const auth = useAuthStore();
 const workspaceStore = useWorkspaceStore();
@@ -1097,9 +1167,14 @@ const draggingOverColumn = ref(null);
 const showRangeDropdown = ref(false);
 const showShareModal = ref(false);
 
-const showDeliveryModal = ref(false);
-const deliveringTask = ref(null);
+const syncingTaskIds = ref(new Set());
 const showFiltersDrawer = ref(false);
+
+const taskCache = ref({});
+const cacheHistory = ref([]); // Tracks insertion order for LRU logic
+const PRELOAD_CACHE_LIMIT = 20;
+
+const preloadingIds = ref(new Set());
 
 const expandedTasks = ref([]);
 
@@ -1158,6 +1233,43 @@ const highlightedTaskId = ref(null);
 const lastTapTime = ref(0);
 const lastTapTaskId = ref(null);
 
+const handleTaskMouseEnter = async (task) => {
+  if (isMobile.value || preloadingIds.value.has(task.id)) return;
+  
+  // If already in cache, just move to front of history
+  if (taskCache.value[task.id]) {
+     cacheHistory.value = cacheHistory.value.filter(id => id !== task.id);
+     cacheHistory.value.push(task.id);
+     return;
+  }
+  
+  preloadingIds.value.add(task.id);
+  try {
+     const response = await axios.get(`/api/tasks/${task.id}`);
+     
+     // Limit cache size (LRU)
+     if (cacheHistory.value.length >= PRELOAD_CACHE_LIMIT) {
+        const oldestId = cacheHistory.value.shift();
+        if (oldestId) delete taskCache.value[oldestId];
+     }
+     
+     taskCache.value[task.id] = response.data;
+     cacheHistory.value.push(task.id);
+  } catch(e) {
+     console.warn('Preload failed', e);
+  } finally {
+     preloadingIds.value.delete(task.id);
+  }
+};
+
+const openTaskDetails = (task) => {
+  if (isMobile.value && (isLongPress.value || hasMoved.value)) {
+     return;
+  }
+  selectedTaskId.value = task.id;
+  highlightedTaskId.value = null;
+};
+
 const handleTaskClick = (task) => {
   if (isMobile.value) return; 
   // Desktop: Single click highlights
@@ -1167,8 +1279,7 @@ const handleTaskClick = (task) => {
 const handleTaskDblClick = (task) => {
   if (isMobile.value) return;
   // Desktop: Double click opens
-  selectedTaskId.value = task.id;
-  highlightedTaskId.value = null; // Clear highlight on open
+  openTaskDetails(task);
 };
 
 const handleTaskTouchStart = (e, task) => {
@@ -1186,7 +1297,7 @@ const handleTaskTouchStart = (e, task) => {
     // Only trigger long press if we haven't moved
     if (!hasMoved.value) {
         isLongPress.value = true;
-        if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+        if (navigator.vibrate) navigator.vibrate(5);
         // Optional: Long press could also open/select if desired, currently it initiates drag
     }
   }, 600);
@@ -1231,22 +1342,75 @@ const handleTaskTouchEnd = (e, task) => {
 };
 
 const updateTaskStatus = async (task, newStatus) => {
-    const originalStatus = task.status;
-    try {
-        task.status = newStatus; // Optimistic update
-        // Find index in tasks.value to ensure consistency
-        const idx = tasks.value.findIndex(t => t.id === task.id);
-        if (idx !== -1) tasks.value[idx].status = newStatus;
+    if (task.status === newStatus) return;
+    
+    const oldStatus = task.status;
+    const oldAssignee = task.assigned_to;
+    const originalTasksState = JSON.parse(JSON.stringify(tasks.value));
 
-        await axios.patch(`/api/tasks/${task.id}`, { status: newStatus });
-        // After successful patch, we don't necessarily need a full fetchTasks() immediately 
-        // unless we expect other side effects (like auto-complete triggers)
-    } catch (error) {
-        task.status = originalStatus; // Revert on failure
-        const idx = tasks.value.findIndex(t => t.id === task.id);
-        if (idx !== -1) tasks.value[idx].status = originalStatus;
-        ui.notify('Action failed: ' + (error.response?.data?.message || 'Server error'), 'error');
+    // 1. Prepare Update Data
+    let updateData = { status: newStatus };
+    // Auto-assignment when moving to Work
+    if (newStatus === 'in_progress' && task.assigned_to !== auth.user.id) {
+       updateData.assigned_to = auth.user.id;
     }
+
+    // 2. Optimistic UI Update
+    task.status = newStatus;
+    if (updateData.assigned_to) task.assigned_to = updateData.assigned_to;
+    
+    // 3. Track Background Sync
+    syncingTaskIds.value.add(task.id);
+
+    try {
+        await axios.patch(`/api/tasks/${task.id}`, updateData);
+    } catch (error) {
+        // 4. Rollback
+        task.status = oldStatus;
+        task.assigned_to = oldAssignee;
+        tasks.value = originalTasksState;
+        ui.notify('Update failed. Reverting...', 'error');
+    } finally {
+        setTimeout(() => syncingTaskIds.value.delete(task.id), 500);
+    }
+};
+
+const activePriorityPickerTaskId = ref(null);
+
+const updatePrioritySync = async (task, newPriority) => {
+    activePriorityPickerTaskId.value = null; // Close instantly
+    if (task.priority === newPriority) return;
+    
+    const oldPriority = task.priority;
+    const originalTasksState = JSON.parse(JSON.stringify(tasks.value));
+
+    // 1. Optimistic
+    task.priority = newPriority;
+    syncingTaskIds.value.add(task.id);
+
+    try {
+        await axios.patch(`/api/tasks/${task.id}`, { priority: newPriority });
+        // Optional sync with TaskDetails if open
+        if (selectedTaskId.value === task.id) {
+           // TaskDetails should ideally watch the prop or initialData, but we can nudge it
+        }
+    } catch (error) {
+        task.priority = oldPriority;
+        tasks.value = originalTasksState;
+        ui.notify('Priority update failed', 'error');
+    } finally {
+        setTimeout(() => syncingTaskIds.value.delete(task.id), 500);
+    }
+};
+
+const priorityDotClass = (p) => {
+  switch (p) {
+    case 'urgent': return 'bg-rose-500';
+    case 'high': return 'bg-orange-500';
+    case 'medium': return 'bg-indigo-500';
+    case 'low': return 'bg-slate-400';
+    default: return 'bg-slate-300';
+  }
 };
 
 
@@ -1584,7 +1748,6 @@ const openModal = () => {
   showModal.value = true;
 };
 
-const updatingTaskIds = ref(new Set());
 const isPolling = ref(false);
 
 const fetchTasks = async (silent = false) => {
@@ -1611,10 +1774,9 @@ const fetchTasks = async (silent = false) => {
         // Update existing tasks and add new ones while respecting local locks
         const mergedTasks = serverTasks.map(serverTask => {
             // If this task is currently being updated locally, keep local version
-            if (updatingTaskIds.value.has(serverTask.id)) {
+            if (syncingTaskIds.value.has(serverTask.id)) {
                 const localTask = tasks.value.find(t => t.id === serverTask.id);
-                // Return server task but with local status/assignee to prevent jumping
-                return localTask ? { ...serverTask, status: localTask.status, assigned_to: localTask.assigned_to } : serverTask;
+                return localTask ? { ...serverTask, status: localTask.status, assigned_to: localTask.assigned_to, priority: localTask.priority } : serverTask;
             }
             return serverTask;
         });
@@ -1624,7 +1786,7 @@ const fetchTasks = async (silent = false) => {
         const settings = currentWorkspace.value?.settings || {};
         if (settings.enable_review_step === false) {
            mergedTasks.forEach(t => {
-              if (t.status === 'testing' && !updatingTaskIds.value.has(t.id)) {
+              if (t.status === 'testing' && !syncingTaskIds.value.has(t.id)) {
                  t.status = 'in_progress';
                  // Optionally: Trigger a background patch to persist this
                  axios.patch(`/api/tasks/${t.id}`, { status: 'in_progress' }).catch(console.error);
@@ -1821,54 +1983,9 @@ const onDrop = async (event, newStatus) => {
   const taskId = event.dataTransfer.getData('taskId');
   const task = tasks.value.find(t => t.id == taskId);
   
-  if (task) {
-    // If dropped in the same column, ignore (no-op) and strictly reset UI
-    if (task.status === newStatus) {
-       draggingOverColumn.value = null;
-       // activeDragTaskId.value = null; // Don't reset this for potential multi-drag logic if you add it later
-       return;
-    }
-
-    // Lock task from polling updates
-    updatingTaskIds.value.add(task.id);
-
-    let updateData = { status: newStatus };
-
-    // Auto-assignment logic: only reassign when moving to 'Work' status (in_progress)
-    if (newStatus === 'in_progress' && task.assigned_to !== auth.user.id) {
-      updateData.assigned_to = auth.user.id;
-    }
-
-    const oldStatus = task.status;
-    const oldAssignee = task.assigned_to;
-    
-    // Optimistic UI update
-    task.status = newStatus;
-    if (updateData.assigned_to) task.assigned_to = updateData.assigned_to;
-
-    try {
-      await axios.patch(`/api/tasks/${taskId}`, updateData);
-      
-      // If moved to done, prompt for delivery
-      if (newStatus === 'done' && !task.delivery) {
-          deliveringTask.value = task;
-          showDeliveryModal.value = true;
-      }
-
-      // Release lock after a slight delay to ensure server consistency
-      setTimeout(() => {
-          updatingTaskIds.value.delete(task.id);
-          // Only fetch if we're not polling to avoid race conditions
-          if (!isPolling.value) fetchTasks(true); 
-      }, 500);
-
-    } catch (error) {
-      // Revert and release lock
-      updatingTaskIds.value.delete(task.id);
-      task.status = oldStatus;
-      task.assigned_to = oldAssignee;
-      ui.notify('Failed to sync. ' + (error.response?.data?.message || 'Server error'), 'error');
-    }
+  if (task && task.status !== newStatus) {
+    // We can just reuse updateTaskStatus for consistency!
+    updateTaskStatus(task, newStatus);
   }
 };
 

@@ -53,7 +53,12 @@ class TaskDeliveryController extends Controller
             // Status is intentionally NOT changed here.
             // Deliveries/Attachments are independent of task status.
 
-            return $delivery->load(['items', 'user']);
+            $delivery->load(['items', 'user']);
+
+            // Notify workspace members about the new delivery (asynchronously)
+            \App\Jobs\NotifyWorkspaceMembers::dispatch($task, 'task_delivered', [], Auth::user())->afterResponse();
+
+            return $delivery;
         });
     }
 
@@ -61,19 +66,28 @@ class TaskDeliveryController extends Controller
     {
         if (!$request->hasFile('file')) {
             return response()->json([
-                'message' => 'No file received. The file might exceed the server\'s upload_max_filesize (currently 30MB) or post_max_size limits.'
+                'message' => 'No file received.'
             ], 422);
         }
 
         $request->validate([
-            'file' => 'required|file|max:30720', // 30MB
+            'file' => 'required|file|max:51200', // Allow up to 50MB
         ]);
 
-        $path = $request->file('file')->store('deliveries', 'public');
+        $file = $request->file('file');
+        $path = $file->store('deliveries', 'public');
         
+        // Dispatch heavy processing to queue
+        if (str_contains($file->getMimeType(), 'image/')) {
+            \App\Jobs\ProcessUploadedImage::dispatch($path);
+        }
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
         return response()->json([
-            'path' => Storage::disk('public')->url($path),
-            'name' => $request->file('file')->getClientOriginalName(),
+            'path' => $disk->url($path),
+            'name' => $file->getClientOriginalName(),
         ]);
     }
 
@@ -98,9 +112,10 @@ class TaskDeliveryController extends Controller
                 if ($item->type !== 'link') {
                     // Extract path from URL if it's a full URL
                     $path = str_replace(url('/storage/'), '', $item->content);
-                    $path = ltrim($path, '/'); // Ensure no leading slash for disk operations
-                    if (Storage::disk('public')->exists($path)) {
-                        Storage::disk('public')->delete($path);
+                    /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+                    $disk = Storage::disk('public');
+                    if ($disk->exists($path)) {
+                        $disk->delete($path);
                     }
                 }
             }
@@ -116,12 +131,15 @@ class TaskDeliveryController extends Controller
     {
         $path = 'deliveries/' . $filename;
         
-        if (!Storage::disk('public')->exists($path)) {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+        
+        if (!$disk->exists($path)) {
             abort(404);
         }
 
-        $file = Storage::disk('public')->path($path);
-        $mime = Storage::disk('public')->mimeType($path);
+        $file = $disk->path($path);
+        $mime = $disk->mimeType($path);
 
         // Files that should open in the browser for preview
         $previewable = [
@@ -142,5 +160,28 @@ class TaskDeliveryController extends Controller
             'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
             'Cache-Control' => 'private, max-age=3600',
         ]);
+    }
+
+    public function updateItem(Request $request, TaskDeliveryItem $item)
+    {
+        $delivery = $item->delivery;
+        $workspace = $delivery->task->board->plan->workspace;
+        
+        $isWorkspaceOwner = $workspace->members()
+            ->where('user_id', Auth::id())
+            ->where('role', 'owner')
+            ->exists();
+            
+        if ($delivery->user_id !== Auth::id() && !$isWorkspaceOwner) {
+            return response()->json(['message' => 'Unauthorized to update this attachment.'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $item->update(['name' => $validated['name']]);
+
+        return response()->json($item);
     }
 }

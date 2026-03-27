@@ -75,7 +75,7 @@ class NotifyWorkspaceMembers implements ShouldQueue
 
         // 2. Event Type Subscription
         // Default: Subscribe to all major events
-        $allowedTypes = $settings['types'] ?? ['task_created', 'task_updated', 'task_completed'];
+        $allowedTypes = $settings['types'] ?? ['task_created', 'task_updated', 'task_completed', 'task_delivered'];
         if (!in_array($this->type, $allowedTypes)) {
             return false;
         }
@@ -125,6 +125,7 @@ class NotifyWorkspaceMembers implements ShouldQueue
             'task_created' => new \App\Mail\TaskCreatedNotification($task),
             'task_updated' => new \App\Mail\TaskUpdatedNotification($task, $this->changes, $this->actor),
             'task_completed' => new \App\Mail\TaskCompletedNotification($task, $this->actor),
+            'task_delivered' => new \App\Mail\TaskDeliveredNotification($task, $this->actor),
             default => null
         };
 

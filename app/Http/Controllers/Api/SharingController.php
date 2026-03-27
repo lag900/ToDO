@@ -31,15 +31,13 @@ class SharingController extends Controller
         $user = User::where('email', $validated['email'])->first();
 
         if ($user) {
-            if ($validated['type'] === 'Workspace') {
-                $entity->members()->syncWithoutDetaching([
-                    $user->id => ['role' => $validated['role']]
-                ]);
-            } else {
-                $entity->members()->syncWithoutDetaching([
-                    $user->id => ['role' => $validated['role']]
-                ]);
-            }
+            $entity->members()->syncWithoutDetaching([
+                $user->id => ['role' => $validated['role']]
+            ]);
+            
+            // Clear cache
+            \Illuminate\Support\Facades\Cache::forget("members_" . strtolower($validated['type']) . "_{$validated['id']}");
+
             return response()->json(['message' => 'User added successfully.']);
         }
 
@@ -108,10 +106,17 @@ class SharingController extends Controller
 
     public function getMembers($type, $id)
     {
-        $model = $type === 'workspace' ? Workspace::class : Plan::class;
-        $entity = $model::with('members')->findOrFail($id);
-        
-        return response()->json($entity->members);
+        $cacheKey = "members_{$type}_{$id}";
+        $members = \Illuminate\Support\Facades\Cache::remember($cacheKey, 3600, function() use ($type, $id) {
+            $model = $type === 'workspace' ? Workspace::class : Plan::class;
+            $entity = $model::with(['members' => function($q) {
+                // Return only needed fields for UI to reduce JSON size
+                $q->select('users.id', 'users.display_name', 'users.avatar');
+            }])->findOrFail($id);
+            return $entity->members;
+        });
+
+        return response()->json($members);
     }
 
     public function removeMember(Request $request, $type, $id, $userId)
@@ -126,6 +131,9 @@ class SharingController extends Controller
         }
 
         $entity->members()->detach($userId);
+        
+        // Clear cache
+        \Illuminate\Support\Facades\Cache::forget("members_" . strtolower($type) . "_{$id}");
 
         return response()->json(['message' => 'Member removed.']);
     }

@@ -38,4 +38,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/tasks/{task}/deliver', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'store']);
     Route::post('/delivery-upload', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'upload']);
     Route::delete('/deliveries/{delivery}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'destroy']);
+    Route::patch('/delivery-items/{item}', [\App\Http\Controllers\Api\TaskDeliveryController::class, 'updateItem']);
 });

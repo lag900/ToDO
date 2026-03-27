@@ -62,7 +62,6 @@ export default defineConfig({
                     // Component chunks
                     'components-heavy': [
                         './resources/js/components/TaskDetails.vue',
-                        './resources/js/components/TaskDeliveryModal.vue',
                     ],
                     'pages-dashboard': ['./resources/js/pages/Dashboard.vue'],
                 },

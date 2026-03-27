@@ -64,7 +64,7 @@
 
             <!-- Label Input -->
             <div class="space-y-2">
-              <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">اللينك ده بتاع إيه؟</p>
+              <p class="text-[9px] font-black uppercase tracking-widest text-slate-400 px-1">How should we name this link?</p>
               <input 
                 type="text" 
                 v-model="linkLabel" 
@@ -86,19 +86,6 @@
               </div>
             </div>
 
-            <!-- Platform Preview -->
-            <transition name="fade">
-              <div v-if="linkPreview" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 shrink-0">
-                  <component :is="linkPreview.icon" class="w-5 h-5" />
-                </div>
-                <div class="min-w-0">
-                  <p class="text-[9px] font-black uppercase tracking-widest text-indigo-600">{{ linkPreview.platform }}</p>
-                  <p class="text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate">{{ linkUrl }}</p>
-                </div>
-              </div>
-            </transition>
-
             <button 
               @click="saveLink" 
               :disabled="!linkUrl"
@@ -108,21 +95,54 @@
             </button>
           </div>
 
-          <!-- Uploading state for files -->
-          <div v-else-if="activePick === 'uploading'" class="py-12 flex flex-col items-center justify-center gap-6 animate-pulse">
-            <div class="w-20 h-20 rounded-[2rem] bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600">
-               <Loader2Icon class="w-10 h-10 animate-spin" />
+          <!-- File Metadata / Preview View -->
+          <div v-else-if="activePick === 'metadata' && selectedFile" class="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-1">
+              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 font-heading">Complete Upload</label>
+              <button @click="resetStore" class="text-[10px] font-black uppercase tracking-widest text-indigo-600">← Back</button>
             </div>
-            <div class="text-center">
-               <p class="text-sm font-black uppercase tracking-[0.2em] text-slate-800 dark:text-white">Uploading Artifacts</p>
-               <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Processing and sanitizing...</p>
+
+            <!-- Preview Card -->
+            <div class="flex items-center gap-4 p-5 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] border border-slate-100 dark:border-slate-800">
+               <div class="w-20 h-20 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                  <img v-if="filePreview" :src="filePreview" class="w-full h-full object-cover">
+                  <FileIcon v-else class="w-8 h-8 text-slate-300" />
+               </div>
+               <div class="min-w-0 flex-1">
+                  <p class="text-[9px] font-black uppercase tracking-widest text-indigo-600 mb-1">
+                    {{ selectedFile.type.startsWith('image/') ? 'Image Asset' : 'System File' }}
+                  </p>
+                  <p class="text-xs font-bold text-slate-400 truncate">{{ selectedFile.name }}</p>
+                  <p class="text-[9px] text-slate-400 mt-1 uppercase tracking-tighter">Size: {{ (selectedFile.size / 1024).toFixed(1) }} KB</p>
+               </div>
             </div>
+
+            <!-- Custom Name Input -->
+            <div class="space-y-2">
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 px-1">Add Name or Description (Optional)</p>
+              <input 
+                type="text" 
+                v-model="customName" 
+                placeholder="Describe this file (optional)"
+                class="w-full h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-6 outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold text-sm"
+                @keyup.enter="saveFile"
+                ref="nameInputRef"
+              >
+            </div>
+
+            <button 
+              @click="saveFile" 
+              class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black shadow-xl shadow-indigo-500/20 hover:bg-indigo-700 transition-all uppercase tracking-widest text-sm active:scale-[0.98]"
+            >
+              Upload Attachment
+            </button>
           </div>
 
-          <!-- Hidden file inputs (outside conditional chain so refs work correctly) -->
-          <input ref="cameraInput" type="file" class="hidden" accept="image/*" capture="environment" @change="onFileChange($event, 'image')">
-          <input ref="imageInput" type="file" class="hidden" accept="image/*" @change="onFileChange($event, 'image')" multiple>
-          <input ref="fileInput" type="file" class="hidden" accept="*/*" @change="onFileChange($event, 'file')" multiple>
+          <!-- Hidden file inputs -->
+          <input ref="cameraInput" type="file" class="hidden" accept="image/*" capture="environment" @change="onFileChange">
+          <input ref="imageInput" type="file" class="hidden" accept="image/*" @change="onFileChange">
+          <input ref="fileInput" type="file" class="hidden" accept="*/*" @change="onFileChange">
         </div>
 
         <!-- Footer Spacer for mobile (safe area) -->
@@ -161,6 +181,12 @@ const linkLabel = ref('');
 const linkPreview = ref(null);
 const isMobile = ref(false);
 const linkInputRef = ref(null);
+const nameInputRef = ref(null);
+
+// File Metadata States
+const selectedFile = ref(null);
+const filePreview = ref(null);
+const customName = ref('');
 
 const linkLabelChips = [
   'Design File',
@@ -209,37 +235,44 @@ const cameraInput = ref(null);
 const imageInput = ref(null);
 const fileInput = ref(null);
 
-const onFileChange = async (event, type) => {
-  const files = event.target.files;
-  if (!files.length) return;
+const onFileChange = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
 
-  activePick.value = 'uploading';
-  const newItems = [];
-
-  for (const file of files) {
-    const formData = new FormData();
-    formData.append('file', file);
-    try {
-      const res = await axios.post('/api/delivery-upload', formData);
-      newItems.push({
-        type: file.type.startsWith('image/') ? 'image' : 'file',
-        name: file.name,
-        content: res.data.path
-      });
-    } catch (e) {
-      console.error('Upload failed', e);
-    }
+  selectedFile.value = file;
+  customName.value = file.name; // Initial value from filename
+  
+  if (file.type.startsWith('image/')) {
+    filePreview.value = URL.createObjectURL(file);
+  } else {
+    filePreview.value = null;
   }
 
-  if (newItems.length > 0) {
-    emit('attached', newItems);
-  }
+  activePick.value = 'metadata';
   
-  // Reset input values so the same file can be selected again
-  if (cameraInput.value) cameraInput.value.value = '';
-  if (imageInput.value) imageInput.value.value = '';
-  if (fileInput.value) fileInput.value.value = '';
+  // Reset input value to allow selecting same file again
+  event.target.value = '';
+
+  // Focus the name input
+  setTimeout(() => nameInputRef.value?.focus(), 150);
+};
+
+const saveFile = () => {
+  if (!selectedFile.value) return;
+
+  const file = selectedFile.value;
+  const isImage = file.type.startsWith('image/');
   
+  const optimisticItem = {
+    id: 'up-' + Math.random().toString(36).substr(2, 9),
+    type: isImage ? 'image' : 'file',
+    name: customName.value.trim() || file.name,
+    content: isImage ? filePreview.value : null,
+    status: 'syncing',
+    file: file // Critical: used by the upload job in DeliveriesSection
+  };
+
+  emit('attached', [optimisticItem]);
   resetStore();
 };
 
@@ -286,6 +319,12 @@ const resetStore = () => {
   linkUrl.value = '';
   linkLabel.value = '';
   linkPreview.value = null;
+  selectedFile.value = null;
+  if (filePreview.value && filePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(filePreview.value);
+  }
+  filePreview.value = null;
+  customName.value = '';
 };
 
 const handleOptionClickRef = (id) => {
